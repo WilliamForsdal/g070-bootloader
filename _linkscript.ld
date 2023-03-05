@@ -45,9 +45,9 @@ __FLASH2_START__ = ORIGIN(FLASH2);
 /* Memories definition */
 MEMORY
 {
-  RAM     (xrw)    : ORIGIN = 0x20000000,   LENGTH = 36K
-  FLASH    (rx)    : ORIGIN = 0x8000000,    LENGTH = 64K
-  FLASH2   (rw)    : ORIGIN = 0x8010000,    LENGTH = 64K
+  RAM    (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+  FLASH  (rx)  : ORIGIN = 0x08000000, LENGTH = 64K
+  FLASH2 (rw)  : ORIGIN = 0x08010000, LENGTH = 64K
 }
 __SRAM_START__ = ORIGIN(RAM);
 
@@ -135,6 +135,8 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM
+
+  _flash2 = __FLASH2_START__;
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

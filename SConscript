@@ -8,6 +8,10 @@ srcs = [
     "main.c",
     "init.c",
     "systick.c",
+    "flasher.c",
+    "settings/settings.c",
+    "_main.c",
+    "sw_crc.c",
     # "dbg_print.c"
     # "stm32g0xx_hal_msp.c",
     # "stm32g0xx_it.c",

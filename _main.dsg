@@ -1,3 +1,18 @@
 .cs_namespace    "Sandbox"
 
 
+settings_block SerialNumbers:
+    u32 serialNumbers[16]:
+        descr "serial number for all nodes in the network. Important for safety, so a node is not mistakenly replaced. Note that serialNumbers[0] is the network ID."
+
+settings_block SettingsBlock1:
+    u32 setting1:
+        default 0xDEADBEEF
+    u32 setting2
+    u32 setting3
+    u32 setting4
+
+
+settings_collection Main:
+    settings_block SettingsBlock1   settings1
+    settings_block SerialNumbers    serialNumbers
