@@ -1,0 +1,3 @@
+[submodule "settings"]
+	path = settings
+	url = git@git.ribbe.se:abjier/src/modules/settings.git
