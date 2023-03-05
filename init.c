@@ -18,13 +18,20 @@ static inline void gpio_cfg(GPIO_TypeDef *port, uint16_t pin, uint32_t mode, uin
     LL_GPIO_SetPinSpeed(port, pin, speed);
 }
 
-void init_gpio()
+static void init_clocks()
 {
-    RCC->IOPENR |= RCC_IOPENR_GPIOAEN; // enable clock for GPIOA
-    __NOP(); // Delay after an RCC peripheral clock enabling
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN; // enable clocks
+    RCC->IOPENR |= RCC_IOPENR_GPIOBEN;
+    RCC->IOPENR |= RCC_IOPENR_GPIOCEN;
+    // RCC->IOPENR |= RCC_IOPENR_GPIODEN;
+    RCC->APBENR2 |= (uint32_t)(1 << 14); // Enable uart1 clock
+    __NOP();                             // Delay after an RCC peripheral clock enabling
     __NOP();
-    __NOP();
-    RCC->IOPENR |= RCC_IOPENR_GPIOCEN; 
+}
+
+static void init_gpio()
+{
+    // LED
     gpio_cfg(GPIOA, LL_GPIO_PIN_5, LL_GPIO_MODE_OUTPUT, LL_GPIO_SPEED_FREQ_HIGH);
 
     // alternate function (USART1)
@@ -32,7 +39,7 @@ void init_gpio()
     gpio_cfg_af(GPIOC, LL_GPIO_PIN_5, LL_GPIO_AF_1, LL_GPIO_SPEED_FREQ_LOW);
 }
 
-static inline void init_systick()
+static void init_systick()
 {
     SysTick->LOAD = (uint32_t)(SYSTICK_TICKS_PER_1KHZ);
     NVIC_SetPriority(SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
@@ -42,28 +49,19 @@ static inline void init_systick()
                     SysTick_CTRL_ENABLE_Msk;
 }
 
-static inline void init_usart(USART_TypeDef *uart)
+static void init_usart(USART_TypeDef *uart)
 {
-    RCC->APBENR2 |= (uint32_t)(1 << 14); // Enable uart1 clock
-    __NOP(); // Delay after an RCC peripheral clock enabling
-    __NOP();
-    __NOP();
-
-    LL_USART_ConfigAsyncMode(uart);
-
-    // Configure baudrate
-    // USARTDIV 
+    // Usart fifos are 8-bytes deep.
+    // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
-    SET_BIT(uart->CR1, USART_CR1_UE);
-    SET_BIT(uart->CR1, USART_CR1_TE);
-    SET_BIT(uart->CR1, USART_CR1_RE);
+    uart->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 }
 
 int setup()
 {
     // Enable prefetch buffer
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
-
+    init_clocks();
     init_gpio();
     init_systick();
     init_usart(USART1);

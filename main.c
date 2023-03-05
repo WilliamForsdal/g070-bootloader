@@ -49,11 +49,11 @@ int main(void)
     // Initialize oscillator, timers and peripherals
     setup();
 
-    uint32_t bss_e = (uint32_t)_bss_end;
-    uart_tx((bss_e)&0xff);
-    uart_tx((bss_e >> 8) & 0xff);
-    uart_tx((bss_e >> 16) & 0xff);
-    uart_tx((bss_e >> 24) & 0xff);
+    // uint32_t bss_e = (uint32_t)_bss_end;
+    // uart_tx((bss_e)&0xff);
+    // uart_tx((bss_e >> 8) & 0xff);
+    // uart_tx((bss_e >> 16) & 0xff);
+    // uart_tx((bss_e >> 24) & 0xff);
 
     // Main loop
     while (1)
@@ -83,7 +83,10 @@ void loop()
     // uart_tx((__FLASH2_START__>>) & 0xff);
     if (rx >= 0)
     {
+        uart_tx(rx);
         uart_tx(rx + 1);
+        uart_tx(rx + 2);
+        uart_tx(rx + 3);
         if (shiet)
         {
             LED_OFF();
