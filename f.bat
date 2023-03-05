@@ -1,0 +1,1 @@
+ST-LINK_CLI.exe -c UR -P "build\bin.srec" -V -Rst
