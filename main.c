@@ -15,9 +15,9 @@ void check_startup_reason();
 void loop();
 void uart_tx_blocking(uint8_t byte);
 
-extern uint8_t _flash2[];
 extern uint8_t _bss_end[];
 // extern uint8_t *__FLASH2_START__[0];
+
 
 int uart_tx(uint8_t byte)
 {
@@ -63,6 +63,14 @@ void uart_tx_blocking(uint8_t byte)
     }
 }
 
+void HardFault_Handler() {
+    BREAK;
+    while (1)
+    {
+        LED_ON();
+    }
+    
+}
 int main(void)
 {
     check_startup_reason();
@@ -70,9 +78,8 @@ int main(void)
     // Initialize oscillator, timers and peripherals
     setup();
     settings_init();
-
     settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
-    settings_union_data.settings1.setting2 = 0xB00B1E55;
+    settings_union_data.settings1.setting2 = 0xFAFAFAFA;
     settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
     uart_tx_w(settings_new.settings1->setting2);
     int ret = settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
@@ -101,6 +108,10 @@ void check_startup_reason()
 // static int shiet = 0;
 void loop()
 {
+    // LED_ON();
+    // SYSTICK_DELAY_MS(100);
+    // LED_OFF();
+    // SYSTICK_DELAY_MS(100);
     // int rx = uart_rx();
     // uart_tx(_bss_end & 0xff);
     // uart_tx((__FLASH2_START__>>) & 0xff);

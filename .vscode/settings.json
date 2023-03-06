@@ -18,6 +18,13 @@
         "setup.h": "c",
         "stm32g0xx_ll_rcc.h": "c",
         "systick.h": "c",
-        "stm32g0xx_ll_usart.h": "c"
-    }
+        "stm32g0xx_ll_usart.h": "c",
+        "settings.h": "c"
+    },
+    // https://www.youtube.com/watch?v=g2Kf6RbdrIs
+    "cortex-debug.gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/12.2 mpacbti-bet1/bin/arm-none-eabi-gdb.exe",
+    "cortex-debug.JLinkGDBServerPath": "C:/Program Files/SEGGER/JLink/JLinkGDBServer.exe",
+    "cortex-debug.openocdPath": "C:/bin/xpack-openocd-0.12.0-1/bin/openocd.exe",
+    "cortex-debug.stutilPath": "C:/bin/stlink-1.7.0-i686-w64-mingw32/bin/st-util.exe",
+    "cortex-debug.variableUseNaturalFormat": false,
 }

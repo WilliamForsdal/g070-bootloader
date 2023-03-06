@@ -26,7 +26,8 @@ env = Environment(
 env.Append(
     CCFLAGS=[
         "-fdiagnostics-color=always",
-        "-O2",
+        "-O0",
+        "-g3",
         "-mcpu=%s" % CPU_ARCH,
         "-DSTM32G070xx",
         # "-DUSE_HAL_DRIVER",

@@ -11,20 +11,19 @@
 // get the page for the specified address
 #define PAGE_FROM_ADDR(addr) ((((uint32_t)addr) - FLASH_START) >> DATA_FLASH_PHYSICAL_BLOCK_BITS)
 
-
 static inline int is_addr_page_aligned(void *addr)
 {
     return ((((uint32_t)addr) & (DATA_FLASH_PHYSICAL_BLOCK_SIZE - 1)) == 0);
 }
 
-static inline void wait_for_ongoing_flash_operation()
-{
-    // Wait for ongoing flash operation
-    while (FLASH->SR & FLASH_SR_BSY1)
-    {
-        // wait.
-    }
-}
+// static inline void wait_for_ongoing_flash_operation()
+// {
+//     // Wait for ongoing flash operation
+//     while (FLASH->SR & FLASH_SR_BSY1)
+//     {
+//         // wait.
+//     }
+// }
 
 static inline void flash_unlock()
 {
@@ -39,12 +38,12 @@ static inline void flash_lock()
 
 static inline void clear_old_errors()
 {
-    FLASH->SR &= ~(FLASH_SR_SIZERR | FLASH_SR_PGSERR | FLASH_SR_PGAERR);
+    FLASH->SR |= 0x0000ffff;
 }
 
 static inline uint32_t get_errors()
 {
-    return FLASH->SR & (FLASH_SR_SIZERR | FLASH_SR_PGSERR | FLASH_SR_PGAERR);
+    return FLASH->SR & (FLASH_SR_SIZERR | FLASH_SR_PGSERR | FLASH_SR_PGAERR | FLASH_SR_MISERR | FLASH_SR_WRPERR | FLASH_SR_PROGERR | FLASH_SR_OPERR);
 }
 
 /// @brief Write data to flash AFTER it's erased.
@@ -60,12 +59,12 @@ int RAMFUNC write_flash(void *flash, const void *data, uint32_t length_bytes)
     }
     if (((uint32_t)flash & 7) != 0)
     {
-        return -1; // bad length.
+        return -2; // bad flash addr. Must start at 8-byte boundary.
     }
     uint32_t length_words = length_bytes >> 2; // divide by 4
     uint32_t *flash_ptr = (uint32_t *)flash;
     uint32_t *data_ptr = (uint32_t *)data;
-    wait_for_ongoing_flash_operation();
+    WAIT_FOR_ONGOING_FLASH_OPERATION();
     flash_unlock();
     clear_old_errors();
     FLASH->CR |= FLASH_CR_PG;
@@ -80,13 +79,15 @@ int RAMFUNC write_flash(void *flash, const void *data, uint32_t length_bytes)
         }
         else
         {
-            *flash_ptr++ = 0xffffffff;
+            *flash_ptr++ = 0; // We have to write, write nothing.
+            // *flash_ptr++ = 0xffffffff; // We have to write, write nothing.
         }
-        wait_for_ongoing_flash_operation();
+        WAIT_FOR_ONGOING_FLASH_OPERATION();
 
         uint32_t errors = get_errors();
         if (errors != 0)
         {
+
             return -2;
         }
 
@@ -109,14 +110,14 @@ int RAMFUNC write_flash(void *flash, const void *data, uint32_t length_bytes)
 int RAMFUNC erase_page(void *page_addr)
 {
     uint32_t page_idx = PAGE_FROM_ADDR(page_addr);
-    wait_for_ongoing_flash_operation();
+    WAIT_FOR_ONGOING_FLASH_OPERATION();
     flash_unlock();
     // Set which page to flash and set PER (to erase page)
     FLASH->CR = (FLASH->CR & (~(FLASH_CR_PNB))) | (page_idx << FLASH_CR_PNB_Pos) | FLASH_CR_PER;
     FLASH->CR |= FLASH_CR_STRT; // Start erase
 
     LED_ON();
-    wait_for_ongoing_flash_operation();
+    WAIT_FOR_ONGOING_FLASH_OPERATION();
     LED_OFF();
 
     FLASH->CR &= ~FLASH_CR_PER; // Clear erase flag
@@ -160,7 +161,9 @@ int RAMFUNC erase_and_flash(void *flash, const void *data, uint32_t length_bytes
     if (reset_after)
     {
         NVIC_SystemReset();
-        while(1) {}; // above func doesn't return.
+        while (1)
+        {
+        }; // above func doesn't return.
     }
     return 1; // OK
 }

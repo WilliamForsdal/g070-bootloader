@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM           # Base style on LLVM style.
+IndentWidth: 4               # Indent is 4 spaces
+ColumnLimit: 200             # max line length before break
+AlignConsecutiveMacros: true # aligns blocks of defines
+
+# Configure line breaks before braces:
+BreakBeforeBraces: Custom   
+BraceWrapping:
+  AfterFunction: true
+  AfterEnum: true
+  AfterStruct: false
+  SplitEmptyFunction: false
+  BeforeElse: false
+  BeforeWhile: false
+  
+AfterControlStatement: BWACS_Always

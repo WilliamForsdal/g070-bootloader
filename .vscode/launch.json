@@ -1,0 +1,22 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "cwd": "${workspaceFolder}",
+      "executable": "./build/bin.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "device": "STM32G070RB",
+      "preLaunchTask": "scons",
+      "configFiles": ["interface/stlink.cfg", "target/stm32g0x.cfg"],
+      "searchDir": [
+        "C:/bin/xpack-openocd-0.12.0-1/openocd/scripts"
+      ]
+    }
+  ]
+}

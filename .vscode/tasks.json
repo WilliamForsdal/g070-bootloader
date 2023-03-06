@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "flash",
+            "label": "scons",
             "type": "shell",
-            "command": "./flash.bat"
+            "command": "scons"
         }
     ]
 }

@@ -51,8 +51,8 @@ static void init_systick()
 
 static void init_usart(USART_TypeDef *uart)
 {
-    NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
-    NVIC_EnableIRQ(USART1_IRQn);
+    // NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
+    // NVIC_EnableIRQ(USART1_IRQn);
     // Usart fifos are 8-bytes deep.
     // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
@@ -65,7 +65,7 @@ int setup()
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
     init_clocks();
     init_gpio();
-    init_systick();
+    // init_systick();
     init_usart(USART1);
 
     return 0;
