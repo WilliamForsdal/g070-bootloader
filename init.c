@@ -1,7 +1,7 @@
 #include "init.h"
 #include "stm32g0xx.h"
-#include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_gpio.h"
+#include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_usart.h"
 #include "systick.h"
 
@@ -44,19 +44,19 @@ static void init_systick()
     SysTick->LOAD = (uint32_t)(SYSTICK_TICKS_PER_1KHZ);
     NVIC_SetPriority(SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
     SysTick->VAL = 0UL;
-    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk |
-                    SysTick_CTRL_TICKINT_Msk |
-                    SysTick_CTRL_ENABLE_Msk;
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
 }
 
 static void init_usart(USART_TypeDef *uart)
 {
-    // NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
-    // NVIC_EnableIRQ(USART1_IRQn);
     // Usart fifos are 8-bytes deep.
     // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
-    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_RXNEIE_RXFNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE ;
+    uart->CR1 = USART_CR1_FIFOEN  | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE; // 
+    uart->CR3 = 0;
+
+    NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
+    NVIC_EnableIRQ(USART1_IRQn);
 }
 
 int setup()
@@ -65,7 +65,7 @@ int setup()
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
     init_clocks();
     init_gpio();
-    // init_systick();
+    init_systick();
     init_usart(USART1);
 
     return 0;
