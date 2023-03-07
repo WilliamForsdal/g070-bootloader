@@ -3,9 +3,9 @@
 #include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_usart.h"
 #include "stm32g0xx_ll_utils.h"
+#include "flashlowlevel/ll_flash.h"
 
 #include "board.h"
-#include "flasher.h"
 #include "init.h"
 #include "main.h"
 #include "settings/settings.h"
@@ -132,10 +132,17 @@ void USART1_IRQHandler()
             if (rx >= 0) {
 
                 if (rx == 'P') {
+
                     settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
                     settings_union_data.settings1.setting2 = !settings_union_data.settings1.setting2;
+                    if(settings_union_data.settings1.setting2)  {
+                        LED_ON();
+                    }
+                    else {
+                        LED_OFF();
+                    }
                     settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
-                    int ret = settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
+                    settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
                     uart_tx_w(settings_new.settings1->setting2);
                 }
 

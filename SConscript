@@ -8,7 +8,6 @@ srcs = [
     "main.c",
     "init.c",
     "systick.c",
-    "flasher.c",
     "settings/settings.c",
     "_main.c",
     "sw_crc.c",
@@ -18,6 +17,11 @@ srcs = [
     # "syscalls.c",
     # "sysmem.c",
     # "system_stm32g0xx.c",
+]
+
+srcs += [
+    "flashlowlevel/ll_flash.c",
+    "flashlowlevel/drv_st/ll_flash_stm32g0.c",
 ]
 
 srcs += [

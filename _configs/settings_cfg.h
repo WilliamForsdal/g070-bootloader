@@ -1,6 +1,6 @@
 // SETTINGS_CFG_FLASH_MEM_SIZE / SETTINGS_CFG_FLASH_PAGE_SIZE
 #include "_main.h"
-#include "flasher.h" // for erase_page / write_flash
+#include "flashlowlevel/ll_flash.h" // for erase_page / write_flash
 #include "sw_crc.h"  // our crc algo
 
 // Writes to flash from settings will be aligned to this boundary (8 for STM32G070RB, 4 for GD?)
@@ -23,11 +23,11 @@ extern uint8_t _flash2[]; // linkscript defines this.
 // signature should be:
 // int erase_page(void *page_start_address) {...}
 // Return < 0 if error, 0 or greater if success.
-#define settings_cfg_erase_flash_page erase_page
+#define settings_cfg_erase_flash_page llflash_erase_page
 
 // This function should have this signature:
 // int write_flash(void *flash_address, void *data, uint32_t length) {...}
 // It will always be called with flash_address aligned to SETTINGS_CFG_FLASH_ALIGN,
 // however the length may be aligned to something less.
 // Shuold just write 00 or FF instead of data in that case.
-#define settings_cfg_write_to_flash write_flash
+#define settings_cfg_write_to_flash llflash_write

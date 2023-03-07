@@ -51,7 +51,7 @@ env.Append(
         # "-finstrument-functions-exclude-file-list=" + no_intrument_files(),
     ],
     LINKFLAGS=[
-        "-T_linkscript.ld",
+        "-Tlinkscript.ld",
         "-Wl,--gc-sections",
     ],
     ASFLAGS=[

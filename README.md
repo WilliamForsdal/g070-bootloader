@@ -2,6 +2,10 @@
 Test bootloader for G070RB
 
 ## Debugging
+Right now not sure how to debug. Would prefer to have something like OpenOCD running in the background at all times,
+and then have a simple build/flash/debug script in vscode, that just connects to the OpenOCD server.
+OpenOCD can be run with the following command:
+`C:/bin/xpack-openocd-0.12.0-1/bin/openocd.exe -c "gdb_port 50000" -s "C:/bin/xpack-openocd-0.12.0-1/openocd/scripts" -f "c:/Users/william/.vscode/extensions/marus25.cortex-debug-1.8.0/support/openocd-helpers.tcl" -f interface/stlink.cfg -f target/stm32g0x.cfg`
 
 1. Install Cortex-M debug
 2. Download https://github.com/stlink-org/stlink/releases/tag/v1.7.0
