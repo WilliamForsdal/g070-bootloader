@@ -36,9 +36,9 @@ void uart_tx_w(uint32_t word)
     uart_tx_blocking((word >> 24) & 0xff);
 }
 
+// Returns -1 if nothing in buffer, else value.
 int uart_rx()
 {
-    // Returns -1 if nothing in buffer, else value.
     if (USART1->ISR & USART_ISR_RXNE_RXFNE) {
         return USART1->RDR;
     } else {
@@ -67,20 +67,19 @@ void HardFault_Handler()
 }
 int main(void)
 {
-    BREAK;
+    // BREAK;
     check_startup_reason();
+    settings_init();
+    uint32_t bruh = settings_new.settings1->setting2;
 
     // Initialize oscillator, timers and peripherals
-    setup();
-    settings_init();
-    settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
-    settings_union_data.settings1.setting2 = 0xFAFAFAFA;
-    settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
-    uart_tx_w(settings_new.settings1->setting2);
-    int ret = settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
-    uart_tx(ret);
-    uart_tx_w(settings_new.settings1->setting2);
 
+    setup();
+    if (bruh) {
+        LED_ON();
+    } else {
+        LED_OFF();
+    }
     // Main loop
     while (1) {
         loop();
@@ -131,8 +130,17 @@ void USART1_IRQHandler()
         while (1) {
             int rx = uart_rx();
             if (rx >= 0) {
+
+                if (rx == 'P') {
+                    settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
+                    settings_union_data.settings1.setting2 = !settings_union_data.settings1.setting2;
+                    settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
+                    int ret = settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
+                    uart_tx_w(settings_new.settings1->setting2);
+                }
+
                 // my_ram_func(rx);
-                uart_tx(rx + 1);
+                uart_tx(rx);
                 cmd_handler_byte(rx);
             } else
                 break;
