@@ -1,11 +1,11 @@
 // SETTINGS_CFG_FLASH_MEM_SIZE / SETTINGS_CFG_FLASH_PAGE_SIZE
-#include "_main.h"
+#include "_main.h" // For dsg generated num blocks define
 #include "flashlowlevel/ll_flash.h" // for erase_page / write_flash
 #include "sw_crc.h"  // our crc algo
 
-// Writes to flash from settings will be aligned to this boundary (8 for STM32G070RB, 4 for GD?)
-#define SETTINGS_CFG_FLASH_ALIGN     8
-#define SETTINGS_CFG_FLASH_PAGE_SIZE 0x800 // 2048
+// Writes to flash from settings will be aligned to this boundary (8 for STM32G070RB, 2 for GD?)
+#define SETTINGS_CFG_FLASH_ALIGN     LL_FLASH_WRITE_GRANULARITY
+#define SETTINGS_CFG_FLASH_PAGE_SIZE LL_FLASH_PAGE_SIZE 
 
 #define SETTINGS_CFG_FLASH_NUM_PAGES       8                                   // we want 8 pages.
 #define SETTINGS_CFG_NUM_COLLECTION_BLOCKS SETTINGS_COLLECTION_MAIN_NUM_BLOCKS // Dsg generates this
