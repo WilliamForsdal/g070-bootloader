@@ -2,6 +2,8 @@
 Test bootloader for G070RB
 
 ## Debugging
+This video is useful: https://www.youtube.com/watch?v=g2Kf6RbdrIs
+
 Right now not sure how to debug. Would prefer to have something like OpenOCD running in the background at all times,
 and then have a simple build/flash/debug script in vscode, that just connects to the OpenOCD server.
 OpenOCD can be run with the following command:
