@@ -12,7 +12,12 @@ settings_block SettingsBlock1:
     u32 setting3
     u32 setting4
 
+settings_block SettingsBlock2:
+    u32 ching
+    u16 chong
+
 
 settings_collection Main:
     settings_block SettingsBlock1   settings1
+    settings_block SettingsBlock2   settings2
     settings_block SerialNumbers    serialNumbers
