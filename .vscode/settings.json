@@ -24,7 +24,8 @@
         "ll_flash_cfg.h": "c",
         "ll_flash_stm32.h": "c",
         "ll_flash_gd32.h": "c",
-        "ll_flash_stm32g0.h": "c"
+        "ll_flash_stm32g0.h": "c",
+        "_main.h": "c"
     },
     // https://www.youtube.com/watch?v=g2Kf6RbdrIs
     "cortex-debug.gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/12.2 mpacbti-bet1/bin/arm-none-eabi-gdb.exe",
