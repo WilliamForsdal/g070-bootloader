@@ -23,6 +23,10 @@ srcs += [
     "flashlowlevel/ll_flash.c",
     "flashlowlevel/drv_st/ll_flash_stm32g0.c",
 ]
+srcs += [
+    "JabusStack/jabus_handler.c",
+    "JabusStack/cmd_handlers.c",
+]
 
 srcs += [
     # "Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal.c",  

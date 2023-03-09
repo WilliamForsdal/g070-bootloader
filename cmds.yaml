@@ -1,0 +1,18 @@
+# commands to autogenerate stub for:
+# TODO yaml instead
+cmds:
+  - Probe
+  - ReadMem
+  # - WriteMem
+  # - Echo
+  # - EchoExt
+  # - Reset
+  # - JumpToMem
+  # - BBLUpdateFirmware
+  # - ReadSettings
+  # - ReadSettingsBasicInfo
+  # - WriteSettings
+  # - EraseSettings
+  # - SSP_ReadLogFromRAM
+  # - SSP_SetupBigLoggerMode
+  # - SSP_GetOnlineModeInfo

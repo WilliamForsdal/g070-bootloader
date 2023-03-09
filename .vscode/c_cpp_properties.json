@@ -21,7 +21,7 @@
             "cppStandard": "c++11",
             "intelliSenseMode": "windows-gcc-arm",
             "forcedInclude": [
-                // "_forced_include.h"
+                "_forced_include.h"
             ]
         }
     ],
