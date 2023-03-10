@@ -8,6 +8,7 @@ srcs = [
     "main.c",
     "init.c",
     "systick.c",
+    "jabus.c",
     "settings/settings.c",
     "_main.c",
     "sw_crc.c",
@@ -22,10 +23,6 @@ srcs = [
 srcs += [
     "flashlowlevel/ll_flash.c",
     "flashlowlevel/drv_st/ll_flash_stm32g0.c",
-]
-srcs += [
-    "JabusStack/jabus_handler.c",
-    "JabusStack/cmd_handlers.c",
 ]
 
 srcs += [

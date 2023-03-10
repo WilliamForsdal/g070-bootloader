@@ -1,9 +1,6 @@
 [submodule "settings"]
 	path = settings
 	url = git@git.ribbe.se:abjier/src/modules/settings.git
-[submodule "JabusStack"]
-	path = JabusStack
-	url = git@git.ribbe.se:abjier/src/modules/JabusStack.git
 [submodule "flashlowlevel"]
 	path = flashlowlevel
 	url = git@git.ribbe.se:abjier/src/modules/flashlowlevel.git

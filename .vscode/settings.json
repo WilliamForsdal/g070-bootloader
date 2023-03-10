@@ -29,7 +29,12 @@
         "settings_cfg.h": "c",
         "jabus_handler.h": "c",
         "cd_interface.h": "c",
-        "jabus_stack_cfg.h": "c"
+        "jabus_stack_cfg.h": "c",
+        "compare": "c",
+        "type_traits": "c",
+        "cmath": "c",
+        "limits": "c",
+        "jabus_basic.h": "c"
     },
     // https://www.youtube.com/watch?v=g2Kf6RbdrIs
     "cortex-debug.gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/12.2 mpacbti-bet1/bin/arm-none-eabi-gdb.exe",

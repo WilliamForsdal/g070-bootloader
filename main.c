@@ -1,13 +1,12 @@
-#include "stm32g0xx.h"
+#include "main.h"
+#include "jabus.h"
+#include "flashlowlevel/ll_flash.h"
 #include "stm32g0xx_ll_gpio.h"
 #include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_usart.h"
 #include "stm32g0xx_ll_utils.h"
-#include "flashlowlevel/ll_flash.h"
 
-#include "board.h"
 #include "init.h"
-#include "main.h"
 #include "settings/settings.h"
 #include "systick.h"
 
@@ -15,6 +14,8 @@ void cmd_handler_byte(uint8_t rx);
 void check_startup_reason();
 void loop();
 void uart_tx_blocking(uint8_t byte);
+void handle(uint8_t b);
+void jabus_handler_mainloop();
 
 extern uint8_t _bss_end[];
 // extern uint8_t *__FLASH2_START__[0];
@@ -97,27 +98,36 @@ void check_startup_reason()
     }
 }
 
-// static int shiet = 0;
-void loop()
+/// @brief
+void test_settings()
 {
-    // LED_ON();
-    // SYSTICK_DELAY_MS(100);
-    // LED_OFF();
-    // SYSTICK_DELAY_MS(100);
-    // int rx = uart_rx();
-    // uart_tx(_bss_end & 0xff);
-    // uart_tx((__FLASH2_START__>>) & 0xff);
-    // if (rx >= 0)
-    // {
-    //     // uart_tx(rx);
+    settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
+    settings_union_data.settings1.setting2 = !settings_union_data.settings1.setting2;
+    if (settings_union_data.settings1.setting2) {
+        LED_ON();
+    } else {
+        LED_OFF();
+    }
+    settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
+    settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
+    uart_tx_w(settings_new.settings1->setting2);
+}
 
-    //     uint32_t cnt = systick_counter;
-    //     uart_tx((cnt >> 0) & 0xff);
-    //     uart_tx((cnt >> 8) & 0xff);
-    //     uart_tx((cnt >> 16) & 0xff);
-    //     uart_tx((cnt >> 24) & 0xff);
+void loop() {
+    jabus_handler_mainloop();
+}
 
-    // }
+
+void jabus_handler_mainloop() {
+    if(js.got_pkt) {
+        uart_tx(0xaa);
+        uart_tx(0xaa);
+        uart_tx(0xaa);
+        uart_tx(0xaa);
+        uart_tx(0xaa);
+        uart_tx(0xaa);
+        js.got_pkt = 0;
+    }
 }
 
 void USART1_IRQHandler()
@@ -130,83 +140,11 @@ void USART1_IRQHandler()
         while (1) {
             int rx = uart_rx();
             if (rx >= 0) {
-
-                if (rx == 'P') {
-
-                    settings_copy_to_union(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1);
-                    settings_union_data.settings1.setting2 = !settings_union_data.settings1.setting2;
-                    if(settings_union_data.settings1.setting2)  {
-                        LED_ON();
-                    }
-                    else {
-                        LED_OFF();
-                    }
-                    settings_union_data.settings1.crc32 = settings_calc_crc(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
-                    settings_write_block(SETTINGS_MAIN_BLOCK_IDX_SETTINGS1, &settings_union_data);
-                    uart_tx_w(settings_new.settings1->setting2);
-                }
-
-                // my_ram_func(rx);
-                uart_tx(rx);
-                cmd_handler_byte(rx);
-            } else
+                // uart_tx(rx);
+                handle(rx);
+            } else {
                 break;
-        }
-    }
-}
-
-#define CMD_MAX_RX_LEN 1024
-struct CmdState {
-    int num_rxed;
-    int state;
-    uint16_t rx_len; // How many bytes we expect.
-    uint8_t buf[CMD_MAX_RX_LEN];
-    int buf_ptr;
-};
-
-static struct CmdState state;
-
-void cmd_handler_byte(uint8_t rx)
-{
-
-    state.num_rxed++;
-
-    switch (state.state) {
-    case 0: // Wait for preamble
-        if (rx == 0xFF) {
-            state.state++;
-        }
-        break;
-    case 1: // Consume preambles
-        if (rx != 0xFF) {
-            state.state++;
-            state.rx_len = rx; // lower 8 bits rxed.
-        }
-        break;
-
-    case 2:
-        state.rx_len |= (rx << 8); // got upper length byte
-
-        if (state.rx_len > CMD_MAX_RX_LEN) {
-            state.state = 0; // too large!
-        } else {
-            state.state++;
-        }
-        break;
-
-    case 3:
-        state.buf[state.buf_ptr++] = rx;
-        if (state.buf_ptr == state.rx_len) {
-            int i;
-            for (i = 0; i < state.buf_ptr; i++) {
-                uart_tx(state.buf[i]);
             }
-            state.state = 0;
         }
-        break;
-
-    default:
-        state.state = 0; // Go back to wait for preambles.
-        break;
     }
 }

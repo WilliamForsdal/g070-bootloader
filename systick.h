@@ -25,3 +25,6 @@ static inline uint32_t get_systick()
 {
     return systick_counter;
 }
+
+#define TMR_IS_TIMEOUT(tmo)    (systick_counter >= tmo)
+#define TMR_CALC_TMO_TICK(tmo) (systick_counter + tmo)

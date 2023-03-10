@@ -42,6 +42,8 @@ _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 __FLASH2_START__ = ORIGIN(FLASH2);
 
+_sstack = _estack - _Min_Stack_Size;
+
 /* Memories definition */
 MEMORY
 {
@@ -135,6 +137,9 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM
+  
+  _extbuf_start = _ebss;
+  _extbuf_size = _sstack - _ebss;
 
   _flash2 = __FLASH2_START__;
 
