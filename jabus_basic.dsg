@@ -1,0 +1,101 @@
+
+struct JabusHeader:
+    .packed
+    u8 dst
+    u8 length       # length is size of packet including header, but excluding 2 byte fcs in the end.
+    u16 cmd
+
+struct JabusHeaderReqExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+    u32 ext_address
+
+struct JabusHeaderAnsExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+
+bitdef PROBE_OP_FLAGS(u16):
+    IN_SMALL_BOOTLOADER 0       # in small bootloader
+    IN_BIG_BOOTLOADER   1       # in big bootloader
+    SETTINGS_WRITE_OK   2       # in allows settingswrite
+    ROUTING_OK          3       # allows routing
+    NORMAL_OP           4       # in normal operation
+    FATAL_ERROR         5       # have fatal error
+    HALF_DUPLEX         6       # this interface is half duplex, also means that ext_buf routing does not use flow ctrl too.
+    RESTART_NEEDS_FF    7       # if restart, PC should send 0xFF on this interface to trigger the reply
+    FLOW_CTRL           8       # if routing, we need flow-ctrl (not implemented well)
+
+struct ProbeConstantData:
+    .packed
+    u8 jabus_hw_type                      # simplex/duplex/usb? etc
+    u32 product_table_ptr                 # memory location where table def is.
+    u16 product_table_size                # size of description table to efficiently read it back.
+    u16 protocol_product_specific_type    # which cmds in cmd_type_product_specific are applicable.
+
+jabus_cmd Probe:
+  id        0x0000
+  cmd_type  cmd_type_global
+  doc       "Probe command"
+  request:
+  answer:
+    u8                          main_cpu_nr     # main CPU nr. Important when the first probe with dst=BROADCAST comes.
+    bitdef PROBE_OP_FLAGS       op_flags        #: u16, bitdef PROBE_OP_FLAGS
+    struct ProbeConstantData    cdata
+
+jabus_cmd NOK:
+  id    0x0002
+  request:
+  answer:
+    u16 the_bad_cmd
+    i32 error_code
+    u32 info
+
+jabus_cmd Echo:
+  id    0x0004
+  request:
+    u8  data[4]
+  answer:
+    u8  data[4]
+
+#enum RESET_MAGIC_TYPE(u32):
+#    # will send a reset reply at startup:
+#    RESTART_IN_BOOTLOADER   0x0E499B4A          # request to restart in bootloader. Both used for normal reset into bootloader, and when reflashed a new bootloader. Same for small/big bootloader
+#    RESTART_WARM            0x6258AF7E                   # request to restart in normal mode, but answer as requested.
+#    RESTART_IN_CONFIG_MODE  0xB773B7AC         # similar to warm reset - but stays in special config mode (if available).
+#    RESTART_IN_SPECIAL      0x7B8B7A35         # some other special mode - this is used in firmware, index is something else
+#    RESTART_IN_SPECIAL_BASE 0x7B8B0000         # this value + 1..255 is uses as argument in the jabus command.
+#
+#    # will not send jabus answer at startup:
+#    NO_RESET                0
+##    REFLASHED_NEW_BOOTLOADER   0xACB773B7       # // will send jabus answer (JumpToMem) when restarted into new bootloader
+#    COLD_RESET                  0xFFFFFFFF                      # can be used to force a cold reset - as any un-defined value.
+#
+#jabus_cmd Reset:
+#  doc   "Resets the device. Either just restarts, or enters bootloader. Future modes might be possible"
+#  id    0x0008
+#  request:
+#    u32 magic       # must be 0x55AA5AA5 for valid cmd.
+#    enum RESET_MAGIC_TYPE reset_magic
+#  answer:
+#    enum RESET_MAGIC_TYPE reset_reasonmagic
+
+jabus_cmd ReadMem:
+  id   0x0010
+  cmd_type cmd_type_memory
+  request:
+    u32 addr
+    u16 length
+  answer_extended:
+
+#jabus_cmd WriteMem:
+#  id   0x0012
+#  cmd_type cmd_type_memory
+#  request_extended:
+#  answer:
