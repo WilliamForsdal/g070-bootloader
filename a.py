@@ -82,8 +82,8 @@ def main():
         return
     print(ret)
 
-    echo = JabusRequestEcho()
-    echo.data = (0,1,2,3)
+    echo = JabusRequestFuck()
+    echo.data = 0xaa
     ret = cmd(echo, port)
     
     if ret is None:

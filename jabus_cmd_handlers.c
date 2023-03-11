@@ -26,3 +26,10 @@ int jabus_cmd_handler_probe(struct JabusState *state, struct JabusRequestProbe *
     ans->op_flags = 0xaa;
     return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
 }
+int jabus_cmd_handler_fuck(struct JabusState* state, struct JabusRequestFuck *req)
+{
+    (void)req;
+    struct JabusAnswerFuck *ans = &state->buf->cmds.ansFuck;
+    ans->data = 0xaa55aabb;
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
+}

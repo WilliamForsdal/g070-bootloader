@@ -372,6 +372,49 @@ class JabusAnswerEcho:
             struct.unpack("<B", data[6: 7])[0],
             struct.unpack("<B", data[7: 8])[0],
         )
+# Jabus Cmd Fuck (0x0006)
+# Fuck
+@dataclasses.dataclass
+class JabusRequestFuck:
+    CMD_ID = 0x0006
+    CMD_NAME = 'Fuck'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'data' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'data' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestFuck.CMD_LENGTH,JabusRequestFuck.CMD_ID))
+    data: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.data)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.data = struct.unpack("<L", data[4:8])[0]
+# Fuck
+@dataclasses.dataclass
+class JabusAnswerFuck:
+    CMD_ID = 0x0006
+    CMD_NAME = 'Fuck'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'data' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'data' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerFuck.CMD_LENGTH,JabusAnswerFuck.CMD_ID))
+    data: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.data)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.data = struct.unpack("<L", data[4:8])[0]
 # Jabus Cmd NOK (0x0002)
 # NOK
 @dataclasses.dataclass
@@ -584,6 +627,7 @@ class SettingsMain_ct(ctypes.Structure):
         ("serialNumbers"     , ctypes.POINTER(Setting_SerialNumbers_ct)), # 8
     ]
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
+# Default BlockHandler.gen_py2: jabus_cmd Fuck:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:
 # Default BlockHandler.gen_py2: jabus_cmd ReadMem:
 # Default BlockHandler.gen_py2: jabus_cmd Probe:
@@ -591,6 +635,8 @@ class SettingsMain_ct(ctypes.Structure):
 JABUS_CMDS_MAP = {
     0x0004: (JabusRequestEcho              , JabusAnswerEcho               ),
     0x0005: (JabusRequestEcho              , JabusAnswerEcho               ), # extended versions
+    0x0006: (JabusRequestFuck              , JabusAnswerFuck               ),
+    0x0007: (JabusRequestFuck              , JabusAnswerFuck               ), # extended versions
     0x0002: (JabusRequestNOK               , JabusAnswerNOK                ),
     0x0003: (JabusRequestNOK               , JabusAnswerNOK                ), # extended versions
     0x0010: (JabusRequestReadMem           , JabusAnswerReadMem            ),

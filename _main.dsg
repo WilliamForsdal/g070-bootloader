@@ -90,6 +90,13 @@ jabus_cmd Echo:
   answer:
     u8  data[4]
 
+jabus_cmd Fuck:
+  id    0x0006
+  request:
+    u32 data
+  answer:
+    u32  data
+
 jabus_cmd ReadMem:
   id   0x0010
   cmd_type cmd_type_memory
