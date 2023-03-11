@@ -6,6 +6,12 @@ import dataclasses
 # constants
 
 
+# Enum JABUS_CMD_HANDLER_RET(i32)
+class ENUM_JABUS_CMD_HANDLER_RET:
+    OK                             = 0
+    NOK                            = -1
+    NOT_IMPLEMENTED                = -100
+
 # Bitdef PROBE_OP_FLAGS(u16)
 class BITDEF_PROBE_OP_FLAGS:
     IN_SMALL_BOOTLOADER_BIT        = 0
@@ -513,6 +519,7 @@ class JabusAnswerProbe:
         self.main_cpu_nr = struct.unpack("<B", data[4:5])[0]
         self.op_flags = struct.unpack("<H", data[5:7])[0]
         self.cdata.unpack(data[7:16])
+# enum JABUS_CMD_HANDLER_RET no ctypes
 # bitdef PROBE_OP_FLAGS no ctypes
 # ctypes SerialNumbers
 class Setting_SerialNumbers_ct(ctypes.Structure):

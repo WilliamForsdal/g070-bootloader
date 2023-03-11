@@ -1,5 +1,11 @@
 .cs_namespace    "Sandbox"
 
+enum JABUS_CMD_HANDLER_RET(i32):
+    OK                          0
+    NOK -1
+    NOT_IMPLEMENTED -100
+
+
 struct JabusHeader:
     .packed
     u8 dst

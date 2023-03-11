@@ -83,7 +83,7 @@ void tx_blocking(uint8_t *data, int len)
     }
 }
 
-void jabus_send_packet()
+void send_jabus_ans()
 {
     js.fcs0 = buf.u16header[0];
     js.fcs1 = buf.u16header[1];
@@ -111,7 +111,7 @@ static void send_nok(int errorCode)
     buf.cmds.ansNOK.header.cmd = JABUS_CMD_NOK;
     buf.cmds.ansNOK.header.length = sizeof(struct JabusAnswerNOK);
     buf.cmds.ansNOK.header.dst = 0;
-    jabus_send_packet();
+    send_jabus_ans();
 }
 
 void jabus_mainloop_handler()
@@ -121,6 +121,9 @@ void jabus_mainloop_handler()
         int ret = jabus_pkt_handler_autogen(cmd, &js);
         if(ret < 0) {
             send_nok(ret);
+        }
+        else {
+            send_jabus_ans();
         }
         js.got_pkt = 0;
     }

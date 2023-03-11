@@ -1,1 +1,1 @@
-C:/dev/src002-103/dsg2.py jabus_basic.dsg --gen_h --gen_c --gen_py
+C:/dev/src002-103/dsg2.py _main.dsg --gen_h --gen_c --gen_py

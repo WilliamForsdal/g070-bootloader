@@ -75,11 +75,20 @@ def ans_from_bytes(reply: bytes):
 def main():
     port = serial.Serial("COM9", 115200)
     probe = JabusRequestProbe()
-    while 1:
-        probe.header.dst = 1
-        ret = cmd(probe, port)
-        if ret is None:
-            continue
-        print(ret)
+    probe.header.dst = 1
+    ret = cmd(probe, port)
+    if ret is None:
+        print("no ans.")
+        return
+    print(ret)
+
+    echo = JabusRequestEcho()
+    echo.data = (0,1,2,3)
+    ret = cmd(echo, port)
+    
+    if ret is None:
+        print("no ans.")
+        return
+    print(ret)
 
 main()
