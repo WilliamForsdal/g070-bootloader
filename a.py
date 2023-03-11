@@ -1,11 +1,11 @@
 import serial
 import time
-import jabus_basic
+from _main import *
 import bincopy
 import struct
 
 
-def cmd(pkt, port: serial.Serial):
+def cmd(pkt, port: serial.Serial, num_preambles: int = 1):
     data = pkt.pack()
     fcs0, fcs1 = struct.unpack("<HH", data[:4])
     for d in data[4:]:
@@ -15,14 +15,14 @@ def cmd(pkt, port: serial.Serial):
     fcs1 %= 0xff
     fcs0 = ~(fcs0) & 0xff
     fcs1 = ~(fcs1) & 0xff
-    send = b'\xff' + data + struct.pack("<BB", fcs0, fcs1)
+    send = b'\xff'*num_preambles + data + struct.pack("<BB", fcs0, fcs1)
     print(send.hex())
     port.write(send)
     return rx(pkt.header.cmd, port)
 
 
 def rx(cmd: int, port: serial.Serial):
-    tmo = time.time() + 1
+    tmo = time.time() + .1
     buf = bytes()
     while 1:
         if time.time() > tmo:
@@ -36,10 +36,11 @@ def rx(cmd: int, port: serial.Serial):
         if len(buf) < 7:
             continue
         if buf[0] != 0xff:
+            buf = buf[1:]
             continue
         ans = ans_from_bytes(buf.lstrip(b'\xff'))
         if ans == -1:
-            return None # bad data
+            continue
         if ans is not None:
             return ans
 
@@ -63,7 +64,7 @@ def ans_from_bytes(reply: bytes):
     fcs1 = (~fcs1) & 0xff
     if fcs0 != rx_fcs0 or fcs1 != rx_fcs1:
         return -1 # bad checksum
-    ans = jabus_basic.JABUS_CMDS_MAP[cmd][1]()
+    ans = JABUS_CMDS_MAP[cmd][1]()
     ans.unpack(reply[:-2])
     if cmd & 0x01:  # extended?
         raise Exception("Extended data not implemented.")
@@ -73,9 +74,12 @@ def ans_from_bytes(reply: bytes):
 
 def main():
     port = serial.Serial("COM9", 115200)
-    probe = jabus_basic.JabusRequestProbe()
-    probe.header.dst = 1
-    ret = cmd(probe, port)
-    print(ret)
+    probe = JabusRequestProbe()
+    while 1:
+        probe.header.dst = 1
+        ret = cmd(probe, port)
+        if ret is None:
+            continue
+        print(ret)
 
 main()

@@ -27,6 +27,133 @@ class BITDEF_PROBE_OP_FLAGS:
     FLOW_CTRL_BIT                  = 8
     FLOW_CTRL_MASK                 = 0x00000100
 
+# SerialNumbers
+@dataclasses.dataclass
+class Setting_SerialNumbers:
+    SIZE = 68
+    BIT_OFFSETS = {
+        'serialNumbers' : 0, #u32
+        'crc32' : 512, #u32
+     }
+    BYTE_OFFSETS = {
+        'serialNumbers' : 0, #u32
+        'crc32' : 64, #u32
+     }
+    serialNumbers: Tuple[int] = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,)
+    crc32: int = 0
+    def pack(self) -> bytes:
+        return (b''
+            + struct.pack("<L", self.serialNumbers[0])
+            + struct.pack("<L", self.serialNumbers[1])
+            + struct.pack("<L", self.serialNumbers[2])
+            + struct.pack("<L", self.serialNumbers[3])
+            + struct.pack("<L", self.serialNumbers[4])
+            + struct.pack("<L", self.serialNumbers[5])
+            + struct.pack("<L", self.serialNumbers[6])
+            + struct.pack("<L", self.serialNumbers[7])
+            + struct.pack("<L", self.serialNumbers[8])
+            + struct.pack("<L", self.serialNumbers[9])
+            + struct.pack("<L", self.serialNumbers[10])
+            + struct.pack("<L", self.serialNumbers[11])
+            + struct.pack("<L", self.serialNumbers[12])
+            + struct.pack("<L", self.serialNumbers[13])
+            + struct.pack("<L", self.serialNumbers[14])
+            + struct.pack("<L", self.serialNumbers[15])
+            + struct.pack("<L", self.crc32)
+        )
+    def unpack(self, data) -> None:
+        self.serialNumbers = (
+            struct.unpack("<L", data[0: 4])[0],
+            struct.unpack("<L", data[4: 8])[0],
+            struct.unpack("<L", data[8: 12])[0],
+            struct.unpack("<L", data[12: 16])[0],
+            struct.unpack("<L", data[16: 20])[0],
+            struct.unpack("<L", data[20: 24])[0],
+            struct.unpack("<L", data[24: 28])[0],
+            struct.unpack("<L", data[28: 32])[0],
+            struct.unpack("<L", data[32: 36])[0],
+            struct.unpack("<L", data[36: 40])[0],
+            struct.unpack("<L", data[40: 44])[0],
+            struct.unpack("<L", data[44: 48])[0],
+            struct.unpack("<L", data[48: 52])[0],
+            struct.unpack("<L", data[52: 56])[0],
+            struct.unpack("<L", data[56: 60])[0],
+            struct.unpack("<L", data[60: 64])[0],
+        )
+        self.crc32 = struct.unpack("<L", data[64:68])[0]
+# SettingsBlock1
+@dataclasses.dataclass
+class Setting_SettingsBlock1:
+    SIZE = 20
+    BIT_OFFSETS = {
+        'setting1' : 0, #u32
+        'setting2' : 32, #u32
+        'setting3' : 64, #u32
+        'setting4' : 96, #u32
+        'crc32' : 128, #u32
+     }
+    BYTE_OFFSETS = {
+        'setting1' : 0, #u32
+        'setting2' : 4, #u32
+        'setting3' : 8, #u32
+        'setting4' : 12, #u32
+        'crc32' : 16, #u32
+     }
+    setting1: int = 0
+    setting2: int = 0
+    setting3: int = 0
+    setting4: int = 0
+    crc32: int = 0
+    def pack(self) -> bytes:
+        return (b''
+            + struct.pack("<L", self.setting1)
+            + struct.pack("<L", self.setting2)
+            + struct.pack("<L", self.setting3)
+            + struct.pack("<L", self.setting4)
+            + struct.pack("<L", self.crc32)
+        )
+    def unpack(self, data) -> None:
+        self.setting1 = struct.unpack("<L", data[0:4])[0]
+        self.setting2 = struct.unpack("<L", data[4:8])[0]
+        self.setting3 = struct.unpack("<L", data[8:12])[0]
+        self.setting4 = struct.unpack("<L", data[12:16])[0]
+        self.crc32 = struct.unpack("<L", data[16:20])[0]
+# SettingsBlock2
+@dataclasses.dataclass
+class Setting_SettingsBlock2:
+    SIZE = 12
+    BIT_OFFSETS = {
+        'ching' : 0, #u32
+        'chong' : 32, #u16
+        '__pad01' : 48, #u8
+        'crc32' : 64, #u32
+     }
+    BYTE_OFFSETS = {
+        'ching' : 0, #u32
+        'chong' : 4, #u16
+        '__pad01' : 6, #u8
+        'crc32' : 8, #u32
+     }
+    ching: int = 0
+    chong: int = 0
+    __pad01: Tuple[int] = (0,0,)
+    crc32: int = 0
+    def pack(self) -> bytes:
+        return (b''
+            + struct.pack("<L", self.ching)
+            + struct.pack("<H", self.chong)
+            + struct.pack("<B", self.__pad01[0])
+            + struct.pack("<B", self.__pad01[1])
+            + struct.pack("<L", self.crc32)
+        )
+    def unpack(self, data) -> None:
+        self.ching = struct.unpack("<L", data[0:4])[0]
+        self.chong = struct.unpack("<H", data[4:6])[0]
+        self.__pad01 = (
+            struct.unpack("<B", data[6: 7])[0],
+            struct.unpack("<B", data[7: 8])[0],
+        )
+        self.crc32 = struct.unpack("<L", data[8:12])[0]
 # JabusHeader
 @dataclasses.dataclass
 class JabusHeader:
@@ -151,6 +278,29 @@ class ProbeConstantData:
         self.product_table_ptr = struct.unpack("<L", data[1:5])[0]
         self.product_table_size = struct.unpack("<H", data[5:7])[0]
         self.protocol_product_specific_type = struct.unpack("<H", data[7:9])[0]
+# Main
+@dataclasses.dataclass
+class SettingsMain:
+    SIZE = 4
+    BIT_OFFSETS = {
+        'settings1' : 0, #ptr32
+        'settings2' : 32, #ptr32
+        'serialNumbers' : 64, #ptr32
+     }
+    BYTE_OFFSETS = {
+        'settings1' : 0, #ptr32
+        'settings2' : 4, #ptr32
+        'serialNumbers' : 8, #ptr32
+     }
+    settings1: int = 0
+    settings2: int = 0
+    serialNumbers: int = 0
+    def pack(self) -> bytes:
+        return struct.pack("<L", self.settings1) + struct.pack("<L", self.settings2) + struct.pack("<L", self.serialNumbers)
+    def unpack(self, data) -> None:
+        self.settings1 = struct.unpack("<L", data[0:4])[0]
+        self.settings2 = struct.unpack("<L", data[4:8])[0]
+        self.serialNumbers = struct.unpack("<L", data[8:12])[0]
 # Jabus Cmd Echo (0x0004)
 # Echo
 @dataclasses.dataclass
@@ -364,6 +514,29 @@ class JabusAnswerProbe:
         self.op_flags = struct.unpack("<H", data[5:7])[0]
         self.cdata.unpack(data[7:16])
 # bitdef PROBE_OP_FLAGS no ctypes
+# ctypes SerialNumbers
+class Setting_SerialNumbers_ct(ctypes.Structure):
+    _fields_ = [
+        ("serialNumbers"     , (ctypes.c_uint * 16)), # 0
+        ("crc32"             , ctypes.c_uint), # 64
+    ]
+# ctypes SettingsBlock1
+class Setting_SettingsBlock1_ct(ctypes.Structure):
+    _fields_ = [
+        ("setting1"          , ctypes.c_uint), # 0
+        ("setting2"          , ctypes.c_uint), # 4
+        ("setting3"          , ctypes.c_uint), # 8
+        ("setting4"          , ctypes.c_uint), # 12
+        ("crc32"             , ctypes.c_uint), # 16
+    ]
+# ctypes SettingsBlock2
+class Setting_SettingsBlock2_ct(ctypes.Structure):
+    _fields_ = [
+        ("ching"             , ctypes.c_uint), # 0
+        ("chong"             , ctypes.c_ushort), # 4
+        ("__pad01"           , (ctypes.c_ubyte * 2)), # 6
+        ("crc32"             , ctypes.c_uint), # 8
+    ]
 # ctypes JabusHeader
 class JabusHeader_ct(ctypes.Structure):
     _fields_ = [
@@ -395,6 +568,13 @@ class ProbeConstantData_ct(ctypes.Structure):
         ("product_table_ptr" , ctypes.c_uint), # 1
         ("product_table_size", ctypes.c_ushort), # 5
         ("protocol_product_specific_type", ctypes.c_ushort), # 7
+    ]
+# ctypes Main
+class SettingsMain_ct(ctypes.Structure):
+    _fields_ = [
+        ("settings1"         , ctypes.POINTER(Setting_SettingsBlock1_ct)), # 0
+        ("settings2"         , ctypes.POINTER(Setting_SettingsBlock2_ct)), # 4
+        ("serialNumbers"     , ctypes.POINTER(Setting_SerialNumbers_ct)), # 8
     ]
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:

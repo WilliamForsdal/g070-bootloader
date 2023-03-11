@@ -34,7 +34,16 @@
         "type_traits": "c",
         "cmath": "c",
         "limits": "c",
-        "jabus_basic.h": "c"
+        "jabus_basic.h": "c",
+        "jabus_handlers.h": "c",
+        "jabus.h": "c",
+        "jabus_cmd_handlers.h": "c",
+        "executor": "c",
+        "io_context": "c",
+        "string_view": "c",
+        "array": "c",
+        "string": "c",
+        "algorithm": "c"
     },
     // https://www.youtube.com/watch?v=g2Kf6RbdrIs
     "cortex-debug.gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/12.2 mpacbti-bet1/bin/arm-none-eabi-gdb.exe",

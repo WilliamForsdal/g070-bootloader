@@ -1,5 +1,27 @@
 .cs_namespace    "Sandbox"
 
+struct JabusHeader:
+    .packed
+    u8 dst
+    u8 length       # length is size of packet including header, but excluding 2 byte fcs in the end.
+    u16 cmd
+
+struct JabusHeaderReqExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+    u32 ext_address
+
+struct JabusHeaderAnsExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+
 settings_block SerialNumbers:
     u32 serialNumbers[16]:
         descr "serial number for all nodes in the network. Important for safety, so a node is not mistakenly replaced. Note that serialNumbers[0] is the network ID."
@@ -19,3 +41,59 @@ settings_collection Main:
     settings_block SettingsBlock1   settings1
     settings_block SettingsBlock2   settings2
     settings_block SerialNumbers    serialNumbers
+
+
+bitdef PROBE_OP_FLAGS(u16):
+    IN_SMALL_BOOTLOADER 0       # in small bootloader
+    IN_BIG_BOOTLOADER   1       # in big bootloader
+    SETTINGS_WRITE_OK   2       # in allows settingswrite
+    ROUTING_OK          3       # allows routing
+    NORMAL_OP           4       # in normal operation
+    FATAL_ERROR         5       # have fatal error
+    HALF_DUPLEX         6       # this interface is half duplex, also means that ext_buf routing does not use flow ctrl too.
+    RESTART_NEEDS_FF    7       # if restart, PC should send 0xFF on this interface to trigger the reply
+    FLOW_CTRL           8       # if routing, we need flow-ctrl (not implemented well)
+
+struct ProbeConstantData:
+    .packed
+    u8 jabus_hw_type                      # simplex/duplex/usb? etc
+    u32 product_table_ptr                 # memory location where table def is.
+    u16 product_table_size                # size of description table to efficiently read it back.
+    u16 protocol_product_specific_type    # which cmds in cmd_type_product_specific are applicable.
+
+jabus_cmd Probe:
+  id        0x0000
+  request:
+  answer:
+    u8                          main_cpu_nr     # main CPU nr. Important when the first probe with dst=BROADCAST comes.
+    bitdef PROBE_OP_FLAGS       op_flags        #: u16, bitdef PROBE_OP_FLAGS
+    struct ProbeConstantData    cdata
+
+jabus_cmd NOK:
+  id    0x0002
+  request:
+  answer:
+    u16 the_bad_cmd
+    i32 error_code
+    u32 info
+
+jabus_cmd Echo:
+  id    0x0004
+  request:
+    u8  data[4]
+  answer:
+    u8  data[4]
+
+jabus_cmd ReadMem:
+  id   0x0010
+  cmd_type cmd_type_memory
+  request:
+    u32 addr
+    u16 length
+  answer_extended:
+
+#jabus_cmd WriteMem:
+#  id   0x0012
+#  cmd_type cmd_type_memory
+#  request_extended:
+#  answer:
