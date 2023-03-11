@@ -40,7 +40,6 @@ const uint8_t settings_sizes[] =
 struct SettingsMain settings_new;
 union SettingsUnionMain settings_union_data;
 
-
 int jabus_pkt_handler_autogen(uint16_t cmd, struct JabusState *js)
 {
     int ret = 0;
@@ -66,7 +65,6 @@ int jabus_pkt_handler_autogen(uint16_t cmd, struct JabusState *js)
         ret = jabus_cmd_handler_probe(js, &js->buf->cmds.reqProbe);
         js->buf->header.length = sizeof(struct JabusAnswerProbe);
         break;
-
     default:
         ret = -100; // unknown cmd.
         break;
