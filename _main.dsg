@@ -90,12 +90,12 @@ jabus_cmd Echo:
   answer:
     u8  data[4]
 
-jabus_cmd Fuck:
+jabus_cmd GetExtbufInfo:
   id    0x0006
   request:
-    u32 data
   answer:
-    u32  data
+    u32  buf_ptr
+    u32  buf_len
 
 jabus_cmd ReadMem:
   id   0x0010

@@ -38,7 +38,7 @@ int main(void)
 
     // Initialize oscillator, timers and peripherals
 
-    setup();
+    setup_normal_mode();
     // Main loop
     while (1) {
         loop();

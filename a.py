@@ -82,9 +82,8 @@ def main():
         return
     print(ret)
 
-    echo = JabusRequestFuck()
-    echo.data = 0xaa
-    ret = cmd(echo, port)
+    extbuf = JabusAnswerGetExtbufInfo()
+    ret = cmd(extbuf, port)
     
     if ret is None:
         print("no ans.")

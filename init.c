@@ -39,34 +39,37 @@ static void init_gpio()
     gpio_cfg_af(GPIOC, LL_GPIO_PIN_5, LL_GPIO_AF_1, LL_GPIO_SPEED_FREQ_LOW);
 }
 
-static void init_systick()
-{
-    SysTick->LOAD = (uint32_t)(SYSTICK_TICKS_PER_1KHZ);
-    NVIC_SetPriority(SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
-    SysTick->VAL = 0UL;
-    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
-}
-
-static void init_usart(USART_TypeDef *uart)
+static void init_usart(USART_TypeDef *uart, int irq)
 {
     // Usart fifos are 8-bytes deep.
     // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
-    uart->CR1 = USART_CR1_FIFOEN  | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE; // 
+    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE; //
     uart->CR3 = 0;
 
-    NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
-    NVIC_EnableIRQ(USART1_IRQn);
+    if (irq) {
+        NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
+        NVIC_EnableIRQ(USART1_IRQn);
+    }
 }
 
-int setup()
+int setup_normal_mode()
 {
     // Enable prefetch buffer
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
     init_clocks();
     init_gpio();
-    init_systick();
-    init_usart(USART1);
-
+    systick_init();
+    init_usart(USART1, 1);
+    return 0;
+}
+int setup_bootloader()
+{
+    // Enable prefetch buffer
+    SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
+    init_clocks();
+    init_gpio();
+    systick_init();
+    init_usart(USART1, 0); // No irq.
     return 0;
 }

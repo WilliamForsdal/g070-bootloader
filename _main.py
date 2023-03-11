@@ -372,49 +372,49 @@ class JabusAnswerEcho:
             struct.unpack("<B", data[6: 7])[0],
             struct.unpack("<B", data[7: 8])[0],
         )
-# Jabus Cmd Fuck (0x0006)
-# Fuck
+# Jabus Cmd GetExtbufInfo (0x0006)
+# GetExtbufInfo
 @dataclasses.dataclass
-class JabusRequestFuck:
+class JabusRequestGetExtbufInfo:
     CMD_ID = 0x0006
-    CMD_NAME = 'Fuck'
-    CMD_LENGTH = 8
+    CMD_NAME = 'GetExtbufInfo'
+    CMD_LENGTH = 4
     BIT_OFFSETS = {
         'header' : 0, #struct
-        'data' : 32, #u32
      }
     BYTE_OFFSETS = {
         'header' : 0, #struct
-        'data' : 4, #u32
      }
-    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestFuck.CMD_LENGTH,JabusRequestFuck.CMD_ID))
-    data: int = 0
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestGetExtbufInfo.CMD_LENGTH,JabusRequestGetExtbufInfo.CMD_ID))
     def pack(self) -> bytes:
-        return self.header.pack() + struct.pack("<L", self.data)
+        return self.header.pack()
     def unpack(self, data) -> None:
         self.header.unpack(data[0:4])
-        self.data = struct.unpack("<L", data[4:8])[0]
-# Fuck
+# GetExtbufInfo
 @dataclasses.dataclass
-class JabusAnswerFuck:
+class JabusAnswerGetExtbufInfo:
     CMD_ID = 0x0006
-    CMD_NAME = 'Fuck'
-    CMD_LENGTH = 8
+    CMD_NAME = 'GetExtbufInfo'
+    CMD_LENGTH = 12
     BIT_OFFSETS = {
         'header' : 0, #struct
-        'data' : 32, #u32
+        'buf_ptr' : 32, #u32
+        'buf_len' : 64, #u32
      }
     BYTE_OFFSETS = {
         'header' : 0, #struct
-        'data' : 4, #u32
+        'buf_ptr' : 4, #u32
+        'buf_len' : 8, #u32
      }
-    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerFuck.CMD_LENGTH,JabusAnswerFuck.CMD_ID))
-    data: int = 0
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerGetExtbufInfo.CMD_LENGTH,JabusAnswerGetExtbufInfo.CMD_ID))
+    buf_ptr: int = 0
+    buf_len: int = 0
     def pack(self) -> bytes:
-        return self.header.pack() + struct.pack("<L", self.data)
+        return self.header.pack() + struct.pack("<L", self.buf_ptr) + struct.pack("<L", self.buf_len)
     def unpack(self, data) -> None:
         self.header.unpack(data[0:4])
-        self.data = struct.unpack("<L", data[4:8])[0]
+        self.buf_ptr = struct.unpack("<L", data[4:8])[0]
+        self.buf_len = struct.unpack("<L", data[8:12])[0]
 # Jabus Cmd NOK (0x0002)
 # NOK
 @dataclasses.dataclass
@@ -627,7 +627,7 @@ class SettingsMain_ct(ctypes.Structure):
         ("serialNumbers"     , ctypes.POINTER(Setting_SerialNumbers_ct)), # 8
     ]
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
-# Default BlockHandler.gen_py2: jabus_cmd Fuck:
+# Default BlockHandler.gen_py2: jabus_cmd GetExtbufInfo:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:
 # Default BlockHandler.gen_py2: jabus_cmd ReadMem:
 # Default BlockHandler.gen_py2: jabus_cmd Probe:
@@ -635,8 +635,8 @@ class SettingsMain_ct(ctypes.Structure):
 JABUS_CMDS_MAP = {
     0x0004: (JabusRequestEcho              , JabusAnswerEcho               ),
     0x0005: (JabusRequestEcho              , JabusAnswerEcho               ), # extended versions
-    0x0006: (JabusRequestFuck              , JabusAnswerFuck               ),
-    0x0007: (JabusRequestFuck              , JabusAnswerFuck               ), # extended versions
+    0x0006: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
+    0x0007: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
     0x0002: (JabusRequestNOK               , JabusAnswerNOK                ),
     0x0003: (JabusRequestNOK               , JabusAnswerNOK                ), # extended versions
     0x0010: (JabusRequestReadMem           , JabusAnswerReadMem            ),

@@ -1,4 +1,4 @@
 #pragma once
 
-
-int setup();
+int setup_normal_mode();
+int setup_bootloader();
