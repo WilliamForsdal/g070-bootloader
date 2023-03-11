@@ -8,6 +8,13 @@ int jabus_cmd_handler_echo(struct JabusState *state, struct JabusRequestEcho *re
     return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
 }
 
+int jabus_cmd_handler_echo_ext(struct JabusState *state, struct JabusRequestEchoExt *req)
+{
+    (void)state;
+    (void)req;
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
+}
+
 int jabus_cmd_handler_nok(struct JabusState *state, struct JabusRequestNOK *req)
 {
     (void)state;

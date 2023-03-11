@@ -10,6 +10,7 @@ import dataclasses
 class ENUM_JABUS_CMD_HANDLER_RET:
     OK                             = 0
     NOK                            = -1
+    NOK_EXTDATA_FCS                = -2
     NOT_IMPLEMENTED                = -100
 
 # Bitdef PROBE_OP_FLAGS(u16)
@@ -372,11 +373,46 @@ class JabusAnswerEcho:
             struct.unpack("<B", data[6: 7])[0],
             struct.unpack("<B", data[7: 8])[0],
         )
-# Jabus Cmd GetExtbufInfo (0x0006)
+# Jabus Cmd EchoExt (0x0006)
+# EchoExt
+@dataclasses.dataclass
+class JabusRequestEchoExt:
+    CMD_ID = 0x0007
+    CMD_NAME = 'EchoExt'
+    CMD_LENGTH = 12
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeaderReqExtended = dataclasses.field(default_factory=lambda: JabusHeaderReqExtended(0,JabusRequestEchoExt.CMD_LENGTH,JabusRequestEchoExt.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:12])
+# EchoExt
+@dataclasses.dataclass
+class JabusAnswerEchoExt:
+    CMD_ID = 0x0007
+    CMD_NAME = 'EchoExt'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeaderAnsExtended = dataclasses.field(default_factory=lambda: JabusHeaderAnsExtended(0,JabusAnswerEchoExt.CMD_LENGTH,JabusAnswerEchoExt.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:8])
+# Jabus Cmd GetExtbufInfo (0x0008)
 # GetExtbufInfo
 @dataclasses.dataclass
 class JabusRequestGetExtbufInfo:
-    CMD_ID = 0x0006
+    CMD_ID = 0x0008
     CMD_NAME = 'GetExtbufInfo'
     CMD_LENGTH = 4
     BIT_OFFSETS = {
@@ -393,7 +429,7 @@ class JabusRequestGetExtbufInfo:
 # GetExtbufInfo
 @dataclasses.dataclass
 class JabusAnswerGetExtbufInfo:
-    CMD_ID = 0x0006
+    CMD_ID = 0x0008
     CMD_NAME = 'GetExtbufInfo'
     CMD_LENGTH = 12
     BIT_OFFSETS = {
@@ -627,6 +663,7 @@ class SettingsMain_ct(ctypes.Structure):
         ("serialNumbers"     , ctypes.POINTER(Setting_SerialNumbers_ct)), # 8
     ]
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
+# Default BlockHandler.gen_py2: jabus_cmd EchoExt:
 # Default BlockHandler.gen_py2: jabus_cmd GetExtbufInfo:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:
 # Default BlockHandler.gen_py2: jabus_cmd ReadMem:
@@ -635,8 +672,10 @@ class SettingsMain_ct(ctypes.Structure):
 JABUS_CMDS_MAP = {
     0x0004: (JabusRequestEcho              , JabusAnswerEcho               ),
     0x0005: (JabusRequestEcho              , JabusAnswerEcho               ), # extended versions
-    0x0006: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
-    0x0007: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
+    0x0006: (JabusRequestEchoExt           , JabusAnswerEchoExt            ),
+    0x0007: (JabusRequestEchoExt           , JabusAnswerEchoExt            ), # extended versions
+    0x0008: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
+    0x0009: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
     0x0002: (JabusRequestNOK               , JabusAnswerNOK                ),
     0x0003: (JabusRequestNOK               , JabusAnswerNOK                ), # extended versions
     0x0010: (JabusRequestReadMem           , JabusAnswerReadMem            ),

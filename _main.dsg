@@ -2,7 +2,8 @@
 
 enum JABUS_CMD_HANDLER_RET(i32):
     OK                          0
-    NOK -1
+    NOK                         -1
+    NOK_EXTDATA_FCS             -2
     NOT_IMPLEMENTED -100
 
 
@@ -90,8 +91,13 @@ jabus_cmd Echo:
   answer:
     u8  data[4]
 
-jabus_cmd GetExtbufInfo:
+jabus_cmd EchoExt:
   id    0x0006
+  request_extended:
+  answer_extended:
+  
+jabus_cmd GetExtbufInfo:
+  id    0x0008
   request:
   answer:
     u32  buf_ptr
