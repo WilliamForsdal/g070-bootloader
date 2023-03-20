@@ -12,11 +12,6 @@ struct JabusState js = {.buf = &buf, .state = 0};
 
 void handle(uint8_t b)
 {
-    if (js.got_pkt) {
-        // Still waiting to handle current packet in userspace.
-        return;
-    }
-
     switch (js.state) {
         // wait for preambles
     case 0:
@@ -68,7 +63,9 @@ void handle(uint8_t b)
             uart_tx(0xfe);
             js.state = 0; // Bad checksum
         } else {
-            if ((js.buf->header.cmd & 1) > 0) {
+            if ((js.buf->header.cmd & 1) == 0) {
+                js.state = JABUS_STATE_GOT_PACKET;
+            } else {
                 // Also rx extended data
                 js.fcs0 = js.fcs1 = 0;
                 js.fletcher_count = 360 - 4;
@@ -79,9 +76,6 @@ void handle(uint8_t b)
                 }
                 js.ext_down_count = js.buf->header_req_ext.ext_length; // note that ext_length is at the same position for both requests and answers.
                 js.state++;
-            } else {
-                js.got_pkt = 1;
-                js.state = 0;
             }
         }
         break;
@@ -112,6 +106,10 @@ void handle(uint8_t b)
             js.state = JABUS_STATE_GOT_PACKET;
         }
         break;
+
+    case JABUS_STATE_GOT_PACKET:
+        break;
+
     default:
         js.state = 0;
         break;
@@ -127,8 +125,9 @@ void tx_blocking(uint8_t *data, int len)
     }
 }
 
-void send_jabus_ans()
+int send_jabus_ans()
 {
+    // TODO check cmd-id is known and valid.
     js.fcs0 = buf.u16header[0];
     js.fcs1 = buf.u16header[1];
     int tx_count = buf.header.length + 2; // Also send FCS
@@ -146,6 +145,28 @@ void send_jabus_ans()
     buf.data[buf.header.length + 1] = mod255(js.fcs1) ^ 0xff;
     uart_tx(0xff);
     tx_blocking(buf.data, tx_count);
+    if ((js.buf->header.cmd & 1) > 0) {
+        js.fcs0 = js.fcs1 = 0;
+        js.fletcher_count = 360 - 4;
+        // Send extended data
+        while (js.ext_down_count--) {
+            uint8_t b = *js.ext_ptr++;
+            uart_tx_blocking(b);
+            js.fcs0 += b;
+            js.fcs1 += js.fcs0;
+            js.fletcher_count--;
+            if (js.fletcher_count) {
+                continue;
+            }
+            js.fcs0 = mod65535(js.fcs0);
+            js.fcs1 = mod65535(js.fcs1);
+            js.fletcher_count = 360 - 4;
+        }
+        js.fcs0 = mod65535(js.fcs0);
+        js.fcs1 = mod65535(js.fcs1);
+        uint32_t fcs_final = (js.fcs0 | (js.fcs1 << 16));
+        tx_blocking(((uint8_t *)(&fcs_final)), 4);
+    }
 }
 
 static void send_nok(int errorCode)
@@ -160,7 +181,7 @@ static void send_nok(int errorCode)
 
 void jabus_mainloop_handler()
 {
-    if (js.got_pkt) {
+    if (js.state == JABUS_STATE_GOT_PACKET) {
         if ((buf.header.cmd & 1) > 0) {
             // Extended data, verify checksum.
             js.fcs0 = mod65535(js.fcs0);
@@ -175,15 +196,18 @@ void jabus_mainloop_handler()
                 return;
             }
         }
-
         uint16_t cmd = buf.header.cmd & (~((uint16_t)1));
+        js.fletcher_count = 0; // In case it's not 0 before we call handler, set it to zero.
         int ret = jabus_pkt_handler_autogen(cmd, &js);
         if (ret < 0) {
             send_nok(ret);
         } else {
+            if (js.fletcher_count != 0) {
+                js.buf->header_ans_ext.cmd |= 1; // also tx extdata.
+            }
             send_jabus_ans();
         }
-        js.got_pkt = 0;
+        js.state = 0;
     }
 }
 

@@ -1,11 +1,18 @@
 .cs_namespace    "Sandbox"
 
+enum STARTUP_REASON(u16):
+    COLD                0
+    WATCHDOG_RESET      1
+    SOFTWARE_RESET      2
+    PIN_RESET           3
+
+
+
 enum JABUS_CMD_HANDLER_RET(i32):
     OK                          0
     NOK                         -1
     NOK_EXTDATA_FCS             -2
     NOT_IMPLEMENTED -100
-
 
 struct JabusHeader:
     .packed
@@ -48,7 +55,6 @@ settings_collection Main:
     settings_block SettingsBlock1   settings1
     settings_block SettingsBlock2   settings2
     settings_block SerialNumbers    serialNumbers
-
 
 bitdef PROBE_OP_FLAGS(u16):
     IN_SMALL_BOOTLOADER 0       # in small bootloader
@@ -111,8 +117,27 @@ jabus_cmd ReadMem:
     u16 length
   answer_extended:
 
-#jabus_cmd WriteMem:
-#  id   0x0012
-#  cmd_type cmd_type_memory
-#  request_extended:
-#  answer:
+jabus_cmd GetSettingsInfo:
+  id   0x0012
+  request:
+  answer:
+    u32 num_settings
+
+jabus_cmd ReadSettingsBlock:
+  id   0x0014
+  request:
+    u32 block_index
+  answer_extended:
+    u32 block_index
+
+
+enum RESET_MODE(u32):
+  NORMAL_OP_MODE   0x4db552ca
+  BOOTLOADER_MODE  0xbdf37d8c
+
+jabus_cmd Reset:
+  id    0x0016
+  request:
+    u32 reset_mode_magic
+  answer:
+    u32 current_mode_magic

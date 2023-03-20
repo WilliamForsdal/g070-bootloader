@@ -14,7 +14,7 @@ int uart_tx(uint8_t byte)
 
 void uart_tx_blocking(uint8_t byte)
 {
-    while (!uart_tx(byte)) {
+    while (uart_tx(byte) < 0) {
     }
 }
 

@@ -55,7 +55,7 @@ static void init_usart(USART_TypeDef *uart, int irq)
 
 int setup_normal_mode()
 {
-    // Enable prefetch buffer
+    // Enable prefetch buffer, doesn't really matter at 16MHz
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
     init_clocks();
     init_gpio();

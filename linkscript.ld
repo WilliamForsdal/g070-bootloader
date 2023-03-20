@@ -68,6 +68,7 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
+    _stext = .;
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
@@ -136,10 +137,21 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
+
   } >RAM
-  
+
+  . = ALIGN(4);
+    _start_persistant = .;
+  .section_persistant_ram (NOLOAD):
+  {
+  . = ALIGN(4);
+    *(.MyPersistantRam)
+    _end_persistant = .;
+  } >RAM
+
   _extbuf_start = _ebss;
   _extbuf_size = _sstack - _ebss;
+  _extbuf_end = _extbuf_start + _extbuf_size;
 
   _flash2 = __FLASH2_START__;
 

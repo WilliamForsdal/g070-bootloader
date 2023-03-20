@@ -13,6 +13,18 @@ class ENUM_JABUS_CMD_HANDLER_RET:
     NOK_EXTDATA_FCS                = -2
     NOT_IMPLEMENTED                = -100
 
+# Enum RESET_MODE(u32)
+class ENUM_RESET_MODE:
+    NORMAL_OP_MODE                 = 1303728842
+    BOOTLOADER_MODE                = 3186851212
+
+# Enum STARTUP_REASON(u16)
+class ENUM_STARTUP_REASON:
+    COLD                           = 0
+    WATCHDOG_RESET                 = 1
+    SOFTWARE_RESET                 = 2
+    PIN_RESET                      = 3
+
 # Bitdef PROBE_OP_FLAGS(u16)
 class BITDEF_PROBE_OP_FLAGS:
     IN_SMALL_BOOTLOADER_BIT        = 0
@@ -451,6 +463,45 @@ class JabusAnswerGetExtbufInfo:
         self.header.unpack(data[0:4])
         self.buf_ptr = struct.unpack("<L", data[4:8])[0]
         self.buf_len = struct.unpack("<L", data[8:12])[0]
+# Jabus Cmd GetSettingsInfo (0x0012)
+# GetSettingsInfo
+@dataclasses.dataclass
+class JabusRequestGetSettingsInfo:
+    CMD_ID = 0x0012
+    CMD_NAME = 'GetSettingsInfo'
+    CMD_LENGTH = 4
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestGetSettingsInfo.CMD_LENGTH,JabusRequestGetSettingsInfo.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+# GetSettingsInfo
+@dataclasses.dataclass
+class JabusAnswerGetSettingsInfo:
+    CMD_ID = 0x0012
+    CMD_NAME = 'GetSettingsInfo'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'num_settings' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'num_settings' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerGetSettingsInfo.CMD_LENGTH,JabusAnswerGetSettingsInfo.CMD_ID))
+    num_settings: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.num_settings)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.num_settings = struct.unpack("<L", data[4:8])[0]
 # Jabus Cmd NOK (0x0002)
 # NOK
 @dataclasses.dataclass
@@ -546,6 +597,92 @@ class JabusAnswerReadMem:
         return self.header.pack()
     def unpack(self, data) -> None:
         self.header.unpack(data[0:8])
+# Jabus Cmd ReadSettingsBlock (0x0014)
+# ReadSettingsBlock
+@dataclasses.dataclass
+class JabusRequestReadSettingsBlock:
+    CMD_ID = 0x0014
+    CMD_NAME = 'ReadSettingsBlock'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'block_index' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'block_index' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestReadSettingsBlock.CMD_LENGTH,JabusRequestReadSettingsBlock.CMD_ID))
+    block_index: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.block_index)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.block_index = struct.unpack("<L", data[4:8])[0]
+# ReadSettingsBlock
+@dataclasses.dataclass
+class JabusAnswerReadSettingsBlock:
+    CMD_ID = 0x0015
+    CMD_NAME = 'ReadSettingsBlock'
+    CMD_LENGTH = 12
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'block_index' : 64, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'block_index' : 8, #u32
+     }
+    header: JabusHeaderAnsExtended = dataclasses.field(default_factory=lambda: JabusHeaderAnsExtended(0,JabusAnswerReadSettingsBlock.CMD_LENGTH,JabusAnswerReadSettingsBlock.CMD_ID))
+    block_index: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.block_index)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:8])
+        self.block_index = struct.unpack("<L", data[8:12])[0]
+# Jabus Cmd Reset (0x0016)
+# Reset
+@dataclasses.dataclass
+class JabusRequestReset:
+    CMD_ID = 0x0016
+    CMD_NAME = 'Reset'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'reset_mode_magic' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'reset_mode_magic' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestReset.CMD_LENGTH,JabusRequestReset.CMD_ID))
+    reset_mode_magic: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.reset_mode_magic)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.reset_mode_magic = struct.unpack("<L", data[4:8])[0]
+# Reset
+@dataclasses.dataclass
+class JabusAnswerReset:
+    CMD_ID = 0x0016
+    CMD_NAME = 'Reset'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'current_mode_magic' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'current_mode_magic' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerReset.CMD_LENGTH,JabusAnswerReset.CMD_ID))
+    current_mode_magic: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.current_mode_magic)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.current_mode_magic = struct.unpack("<L", data[4:8])[0]
 # Jabus Cmd Probe (0x0000)
 # Probe
 @dataclasses.dataclass
@@ -599,6 +736,8 @@ class JabusAnswerProbe:
         self.op_flags = struct.unpack("<H", data[5:7])[0]
         self.cdata.unpack(data[7:16])
 # enum JABUS_CMD_HANDLER_RET no ctypes
+# enum RESET_MODE no ctypes
+# enum STARTUP_REASON no ctypes
 # bitdef PROBE_OP_FLAGS no ctypes
 # ctypes SerialNumbers
 class Setting_SerialNumbers_ct(ctypes.Structure):
@@ -665,8 +804,11 @@ class SettingsMain_ct(ctypes.Structure):
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
 # Default BlockHandler.gen_py2: jabus_cmd EchoExt:
 # Default BlockHandler.gen_py2: jabus_cmd GetExtbufInfo:
+# Default BlockHandler.gen_py2: jabus_cmd GetSettingsInfo:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:
 # Default BlockHandler.gen_py2: jabus_cmd ReadMem:
+# Default BlockHandler.gen_py2: jabus_cmd ReadSettingsBlock:
+# Default BlockHandler.gen_py2: jabus_cmd Reset:
 # Default BlockHandler.gen_py2: jabus_cmd Probe:
 
 JABUS_CMDS_MAP = {
@@ -676,10 +818,16 @@ JABUS_CMDS_MAP = {
     0x0007: (JabusRequestEchoExt           , JabusAnswerEchoExt            ), # extended versions
     0x0008: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
     0x0009: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
+    0x0012: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ),
+    0x0013: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ), # extended versions
     0x0002: (JabusRequestNOK               , JabusAnswerNOK                ),
     0x0003: (JabusRequestNOK               , JabusAnswerNOK                ), # extended versions
     0x0010: (JabusRequestReadMem           , JabusAnswerReadMem            ),
     0x0011: (JabusRequestReadMem           , JabusAnswerReadMem            ), # extended versions
+    0x0014: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ),
+    0x0015: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ), # extended versions
+    0x0016: (JabusRequestReset             , JabusAnswerReset              ),
+    0x0017: (JabusRequestReset             , JabusAnswerReset              ), # extended versions
     0x0000: (JabusRequestProbe             , JabusAnswerProbe              ),
     0x0001: (JabusRequestProbe             , JabusAnswerProbe              ), # extended versions
 }

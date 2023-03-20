@@ -5,4 +5,5 @@
 
 extern struct JabusState js;
 
+int send_jabus_ans();
 void jabus_mainloop_handler();
