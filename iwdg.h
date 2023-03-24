@@ -7,13 +7,3 @@
 static inline void iwdg_kick() {
     IWDG->KR = IWDG_KR_KICK;
 }
-
-static inline void iwdg_init() {
-    IWDG->KR = IWDG_KR_ENABLE;
-    IWDG->KR = IWDG_KR_UNLOCK;
-    IWDG->PR = 0x00000001; // 32000Hz / 8 = 4kHz
-    IWDG->RLR = 40; // (1/4kHz) * 40 ~= 100ms
-     // Wait for regs to update
-    while(IWDG->SR != 0) {}
-    iwdg_kick();
-}

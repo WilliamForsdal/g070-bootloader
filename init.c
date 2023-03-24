@@ -6,6 +6,16 @@
 #include "systick.h"
 #include "iwdg.h"
 
+static void iwdg_init() {
+    IWDG->KR = IWDG_KR_ENABLE;
+    IWDG->KR = IWDG_KR_UNLOCK;
+    IWDG->PR = 0x00000001; // 32000Hz / 8 = 4kHz
+    IWDG->RLR = 40; // (1/4kHz) * 40 ~= 100ms
+     // Wait for regs to update
+    while(IWDG->SR != 0) {}
+    iwdg_kick();
+}
+
 static inline void gpio_cfg_af(GPIO_TypeDef *port, uint16_t pin, uint32_t alternate_func, uint32_t speed)
 {
     LL_GPIO_SetPinMode(port, pin, LL_GPIO_MODE_ALTERNATE);
@@ -45,8 +55,8 @@ static void init_usart(USART_TypeDef *uart, int irq)
     // Usart fifos are 8-bytes deep.
     // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
-    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE; //
-    uart->CR3 = 0;
+    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE | USART_CR1_TXFEIE; //
+    uart->CR3 = 0b101 << USART_CR3_TXFTCFG_Pos;
 
     if (irq) {
         NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);

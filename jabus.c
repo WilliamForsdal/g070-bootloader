@@ -59,8 +59,8 @@ void handle(uint8_t b)
     case 4:                           // rx checksum
         js.buf->data[js.got_len] = b; // Last fcs byte
         if ((mod255(js.fcs0) ^ 0xff) != (js.buf->data[js.got_len - 1]) || (mod255(js.fcs1) ^ 0xff) != b) {
-            uart_tx(0xfe);
-            uart_tx(0xfe);
+            uint16_t fefe = 0xFEFE;
+            uart_tx_blocking((uint8_t *)&fefe, 2);
             js.state = 0; // Bad checksum
         } else {
             if ((js.buf->header.cmd & 1) == 0) {
@@ -116,15 +116,6 @@ void handle(uint8_t b)
     }
 }
 
-void tx_blocking(uint8_t *data, int len)
-{
-    while (len--) {
-        uint8_t b = *data++;
-        while (uart_tx(b) < 0) {
-        }
-    }
-}
-
 int send_jabus_ans()
 {
     // TODO check cmd-id is known and valid.
@@ -143,18 +134,19 @@ int send_jabus_ans()
     }
     buf.data[buf.header.length] = mod255(js.fcs0) ^ 0xff;
     buf.data[buf.header.length + 1] = mod255(js.fcs1) ^ 0xff;
-    uart_tx(0xff);
-    tx_blocking(buf.data, tx_count);
+    uint8_t preamble = 0xff;
+    uart_tx_blocking(&preamble, 1);
+    uart_tx_blocking(buf.data, tx_count);
+
     if ((js.buf->header.cmd & 1) > 0) {
         js.fcs0 = js.fcs1 = 0;
         js.fletcher_count = 360 - 4;
         // Send extended data
         while (js.ext_down_count--) {
-            uint8_t b = *js.ext_ptr++;
-            uart_tx_blocking(b);
-            js.fcs0 += b;
+            js.fcs0 += *js.ext_ptr;
             js.fcs1 += js.fcs0;
             js.fletcher_count--;
+            uart_tx_blocking(js.ext_ptr++, 1);
             if (js.fletcher_count) {
                 continue;
             }
@@ -165,7 +157,7 @@ int send_jabus_ans()
         js.fcs0 = mod65535(js.fcs0);
         js.fcs1 = mod65535(js.fcs1);
         uint32_t fcs_final = (js.fcs0 | (js.fcs1 << 16));
-        tx_blocking(((uint8_t *)(&fcs_final)), 4);
+        uart_tx_blocking(((uint8_t *)(&fcs_final)), 4);
     }
     return 0;
 }
@@ -201,11 +193,12 @@ void jabus_mainloop_handler()
         }
         uint16_t cmd = buf.header.cmd & (~((uint16_t)1));
         js.fletcher_count = 0; // In case it's not 0 before we call handler, set it to zero.
+        js.ext_down_count = 0;
         int ret = jabus_pkt_handler_autogen(cmd, &js);
         if (ret < 0) {
             send_nok(ret);
         } else {
-            if (js.fletcher_count != 0) {
+            if (js.ext_down_count != 0) {
                 js.buf->header_ans_ext.cmd |= 1; // also tx extdata.
             }
             send_jabus_ans();

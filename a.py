@@ -130,12 +130,12 @@ def main():
     # ret = cmd(echo_ext, port, extdata)
     # print(ret.ext_data.hex())
 
-    # settings_info: JabusAnswerGetSettingsInfo = cmd(JabusRequestGetSettingsInfo(), port)
-    # print(settings_info)
+    settings_info: JabusAnswerGetSettingsInfo = cmd(JabusRequestGetSettingsInfo(), port)
+    print(settings_info)
 
-    # for i in range(settings_info.num_settings):
-    #     block = cmd(JabusRequestReadSettingsBlock(block_index=i), port)
-    #     print(block.ext_data.hex())
+    for i in range(settings_info.num_settings):
+        block = cmd(JabusRequestReadSettingsBlock(block_index=i), port)
+        print(block.ext_data.hex())
         
     ret = cmd(JabusRequestReset(reset_mode_magic=ENUM_RESET_MODE.NORMAL_OP_MODE), port)
     return
