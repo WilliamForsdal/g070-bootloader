@@ -1,7 +1,7 @@
 
 #include "uart1.h"
-#include "iwdg.h"
 #include "board.h"
+#include "iwdg.h"
 
 #define UART_TX_RINGBUF_SIZE 256 // Make sure this is a multiple of 2 so we avoid expensive division.
 
@@ -14,14 +14,21 @@ struct UartTxRingBuffer tx_buf;
 
 extern void uart_rx_handler(uint8_t b);
 
-static inline void uart_push_data_from_ringbuf_to_periph()
+int uart_tx_free() { return UART_TX_RINGBUF_SIZE - 1 - (tx_buf.head - tx_buf.tail); }
+
+static inline void uart_push_data_from_ringbuf_to_hw()
 {
     USART1->CR1 &= ~USART_CR1_TXFEIE; // Disable usart irq during tail update
+    if (tx_buf.tail == tx_buf.head) {
+        return;
+    }
     while ((tx_buf.tail != tx_buf.head) && (USART1->ISR & USART_ISR_TXE_TXFNF)) {
         USART1->TDR = tx_buf.buf[tx_buf.tail];
         tx_buf.tail = (tx_buf.tail + 1) % UART_TX_RINGBUF_SIZE;
     }
-    USART1->CR1 |= USART_CR1_TXFEIE; // Reenable irq
+    if(tx_buf.tail != tx_buf.head) {
+        USART1->CR1 |= USART_CR1_TXFEIE; // Reenable irq, more data to send but hw buf full.
+    }
 }
 
 void uart_tx_blocking(uint8_t *data, int num_bytes)
@@ -34,7 +41,7 @@ void uart_tx_blocking(uint8_t *data, int num_bytes)
     }
 }
 
-/// @brief Push data to uart ringbuf, and start tx.
+/// @brief Push data to uart ringbuf, and start tx. Can be called from userspace.
 /// @param data the data
 /// @param bytes how many bytes.
 /// @return how many bytes we handled. Caller should check this.
@@ -50,7 +57,7 @@ int uart_tx(uint8_t *data, int num_bytes)
         tx_buf.head = new_head;
         handled++;
     }
-    uart_push_data_from_ringbuf_to_periph();
+    uart_push_data_from_ringbuf_to_hw();
     return handled;
 }
 
@@ -63,7 +70,7 @@ void USART1_IRQHandler()
         // Transmit buffer empty:
         //   Push data from ringbuffer if available
         //   clear irq flag
-        uart_push_data_from_ringbuf_to_periph();
+        uart_push_data_from_ringbuf_to_hw();
         USART1->ICR |= USART_ICR_TXFECF; // Clear irq flag
     }
     while (USART1->ISR & USART_ISR_RXNE_RXFNE) {
