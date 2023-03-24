@@ -6,6 +6,17 @@ enum STARTUP_REASON(u16):
     SOFTWARE_RESET      2
     PIN_RESET           3
 
+enum FATAL_ERROR_CODE(u32):
+    NO_ERROR            0
+    WATCHDOG_RESET      1
+
+enum MAIN_STATE(u32):
+    NORMAL_MODE         0
+    CONFIG_MODE         1
+    FATAL_ERROR         2
+
+    STARTUP             10
+    HARDFAULT           11
 
 
 enum JABUS_CMD_HANDLER_RET(i32):

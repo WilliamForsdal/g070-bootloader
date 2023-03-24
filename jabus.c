@@ -167,6 +167,7 @@ int send_jabus_ans()
         uint32_t fcs_final = (js.fcs0 | (js.fcs1 << 16));
         tx_blocking(((uint8_t *)(&fcs_final)), 4);
     }
+    return 0;
 }
 
 static void send_nok(int errorCode)
@@ -181,6 +182,7 @@ static void send_nok(int errorCode)
 
 void jabus_mainloop_handler()
 {
+    // call packet handlers here if we got a packet.
     if (js.state == JABUS_STATE_GOT_PACKET) {
         if ((buf.header.cmd & 1) > 0) {
             // Extended data, verify checksum.
@@ -193,6 +195,7 @@ void jabus_mainloop_handler()
                 // bad checksum!
                 send_nok(DSG_ENUM_JABUS_CMD_HANDLER_RET_NOK_EXTDATA_FCS);
                 js.state = 0; // mark that we're ready to handle next msg
+                LED_OFF();
                 return;
             }
         }
@@ -208,6 +211,7 @@ void jabus_mainloop_handler()
             send_jabus_ans();
         }
         js.state = 0;
+        LED_OFF();
     }
 }
 

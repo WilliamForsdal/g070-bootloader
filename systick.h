@@ -1,20 +1,20 @@
 #pragma once
-#include "stm32g0xx.h"
 #include <stdint.h>
+#include "stm32g0xx.h"
+#include "iwdg.h"
+#include "board.h"
+#include "persistant_data.h"
 
 #define CLOCK_SPEED            16000000
 #define SYSTICK_FRQ            1000
 #define SYSTICK_TICKS_PER_1KHZ (CLOCK_SPEED / SYSTICK_FRQ) - 1
 
-// 1ms counter
-extern volatile uint32_t systick_counter;
-
-__WEAK void iwdg_kick() {}
+#define SYSTICK_COUNTER (persistantData.main_state.systick_counter)
 
 #define SYSTICK_DELAY_MS(t)                                                                                                                                                                            \
     do {                                                                                                                                                                                               \
-        uint32_t tmo = systick_counter + t;                                                                                                                                                            \
-        while (systick_counter < tmo) {                                                                                                                                                                \
+        uint32_t tmo = SYSTICK_COUNTER + t;                                                                                                                                                            \
+        while (SYSTICK_COUNTER < tmo) {                                                                                                                                                                \
             iwdg_kick();                                                                                                                                                                               \
         }                                                                                                                                                                                              \
     } while (0)
@@ -27,7 +27,7 @@ static inline void systick_init()
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
 }
 
-static inline uint32_t get_systick() { return systick_counter; }
+static inline uint32_t get_systick() { return SYSTICK_COUNTER; }
 
-#define TMR_IS_TIMEOUT(tmo)    (systick_counter >= tmo)
-#define TMR_CALC_TMO_TICK(tmo) (systick_counter + tmo)
+#define TMR_IS_TIMEOUT(tmo)    (SYSTICK_COUNTER >= tmo)
+#define TMR_CALC_TMO_TICK(tmo) (SYSTICK_COUNTER + tmo)

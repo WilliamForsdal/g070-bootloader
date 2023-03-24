@@ -6,12 +6,25 @@ import dataclasses
 # constants
 
 
+# Enum FATAL_ERROR_CODE(u32)
+class ENUM_FATAL_ERROR_CODE:
+    NO_ERROR                       = 0
+    WATCHDOG_RESET                 = 1
+
 # Enum JABUS_CMD_HANDLER_RET(i32)
 class ENUM_JABUS_CMD_HANDLER_RET:
     OK                             = 0
     NOK                            = -1
     NOK_EXTDATA_FCS                = -2
     NOT_IMPLEMENTED                = -100
+
+# Enum MAIN_STATE(u32)
+class ENUM_MAIN_STATE:
+    NORMAL_MODE                    = 0
+    CONFIG_MODE                    = 1
+    FATAL_ERROR                    = 2
+    STARTUP                        = 10
+    HARDFAULT                      = 11
 
 # Enum RESET_MODE(u32)
 class ENUM_RESET_MODE:
@@ -735,7 +748,9 @@ class JabusAnswerProbe:
         self.main_cpu_nr = struct.unpack("<B", data[4:5])[0]
         self.op_flags = struct.unpack("<H", data[5:7])[0]
         self.cdata.unpack(data[7:16])
+# enum FATAL_ERROR_CODE no ctypes
 # enum JABUS_CMD_HANDLER_RET no ctypes
+# enum MAIN_STATE no ctypes
 # enum RESET_MODE no ctypes
 # enum STARTUP_REASON no ctypes
 # bitdef PROBE_OP_FLAGS no ctypes

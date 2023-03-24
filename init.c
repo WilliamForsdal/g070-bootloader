@@ -4,6 +4,7 @@
 #include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_usart.h"
 #include "systick.h"
+#include "iwdg.h"
 
 static inline void gpio_cfg_af(GPIO_TypeDef *port, uint16_t pin, uint32_t alternate_func, uint32_t speed)
 {
@@ -53,23 +54,13 @@ static void init_usart(USART_TypeDef *uart, int irq)
     }
 }
 
-int setup_normal_mode()
-{
+int init_core() {
     // Enable prefetch buffer, doesn't really matter at 16MHz
     SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
     init_clocks();
     init_gpio();
     systick_init();
+    iwdg_init();
     init_usart(USART1, 1);
-    return 0;
-}
-int setup_bootloader()
-{
-    // Enable prefetch buffer
-    SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN);
-    init_clocks();
-    init_gpio();
-    systick_init();
-    init_usart(USART1, 0); // No irq.
     return 0;
 }

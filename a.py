@@ -3,7 +3,7 @@ import time
 from _main import *
 import bincopy
 import struct
-
+import binascii
 
 def cmd(pkt, port: serial.Serial, extdata: bytes = None):
     tx(pkt, port, extdata)
@@ -111,26 +111,33 @@ def ans_from_bytes(reply: bytes):
         ans.ext_data = b""
     return ans
 
+def flash(fw: str):
+    # enter bootloader
+    # get extbuf
+    # Flash firmware using RAM extbuf 
+    # reset
+    pass
 
 def main():
     port = serial.Serial("COM9", 115200)
-    ret = tx(JabusRequestReset(reset_mode_magic=ENUM_RESET_MODE.NORMAL_OP_MODE), port)
-    return
     ret: JabusAnswerGetExtbufInfo = cmd(JabusRequestGetExtbufInfo(), port)
     if ret is None:
         print("no ans.")
         return
-    extdata = bytes([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-    echo_ext = JabusRequestEchoExt()
-    echo_ext.header.ext_address = ret.buf_ptr
-    ret = cmd(echo_ext, port, extdata)
-    print(ret.ext_data.hex())
+    # extdata = bytes([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+    # echo_ext = JabusRequestEchoExt()
+    # echo_ext.header.ext_address = ret.buf_ptr
+    # ret = cmd(echo_ext, port, extdata)
+    # print(ret.ext_data.hex())
 
-    settings_info: JabusAnswerGetSettingsInfo = cmd(JabusRequestGetSettingsInfo(), port)
-    print(settings_info)
+    # settings_info: JabusAnswerGetSettingsInfo = cmd(JabusRequestGetSettingsInfo(), port)
+    # print(settings_info)
 
-    for i in range(settings_info.num_settings):
-        block = cmd(JabusRequestReadSettingsBlock(block_index=i), port)
-        print(block.ext_data.hex())
+    # for i in range(settings_info.num_settings):
+    #     block = cmd(JabusRequestReadSettingsBlock(block_index=i), port)
+    #     print(block.ext_data.hex())
+        
+    ret = cmd(JabusRequestReset(reset_mode_magic=ENUM_RESET_MODE.NORMAL_OP_MODE), port)
+    return
 
 main()

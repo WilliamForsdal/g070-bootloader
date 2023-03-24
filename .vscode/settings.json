@@ -45,7 +45,13 @@
         "string": "c",
         "algorithm": "c",
         "bootloader.h": "c",
-        "uart1.h": "c"
+        "uart1.h": "c",
+        "fatal_error.h": "c",
+        "cmsis_gcc.h": "c",
+        "board.h": "c",
+        "persistant_data.h": "c",
+        "string.h": "c",
+        "cdefs.h": "c"
     },
     // https://www.youtube.com/watch?v=g2Kf6RbdrIs
     "cortex-debug.gdbPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/12.2 mpacbti-bet1/bin/arm-none-eabi-gdb.exe",
