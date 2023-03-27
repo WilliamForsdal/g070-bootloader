@@ -146,11 +146,12 @@ SECTIONS
   {
   . = ALIGN(4);
     *(.MyPersistantRam)
+  . = ALIGN(4);
     _end_persistant = .;
   } >RAM
 
-  _extbuf_start = _ebss;
-  _extbuf_size = _sstack - _ebss;
+  _extbuf_start = _end_persistant;
+  _extbuf_size = _sstack - _end_persistant;
   _extbuf_end = _extbuf_start + _extbuf_size;
 
   _flash2 = __FLASH2_START__;

@@ -15,7 +15,7 @@ class ENUM_FATAL_ERROR_CODE:
 class ENUM_JABUS_CMD_HANDLER_RET:
     OK                             = 0
     NOK                            = -1
-    NOK_EXTDATA_FCS                = -2
+    NOK_EXTDATA_BAD_FCS            = -2
     NOT_IMPLEMENTED                = -100
 
 # Enum MAIN_STATE(u32)
@@ -278,6 +278,73 @@ class JabusHeaderReqExtended:
         self.cmd = struct.unpack("<H", data[2:4])[0]
         self.ext_length = struct.unpack("<L", data[4:8])[0]
         self.ext_address = struct.unpack("<L", data[8:12])[0]
+# LinkerSymbols
+@dataclasses.dataclass
+class LinkerSymbols:
+    SIZE = 44
+    BIT_OFFSETS = {
+        'text_start' : 0, #ptr32
+        'text_end' : 32, #ptr32
+        'ram_data_start' : 64, #ptr32
+        'ram_data_end' : 96, #ptr32
+        'bss_start' : 128, #ptr32
+        'bss_end' : 160, #ptr32
+        'persistant_ram_start' : 192, #ptr32
+        'persistant_ram_end' : 224, #ptr32
+        'extbuf_start' : 256, #ptr32
+        'extbuf_end' : 288, #ptr32
+        'extbuf_size' : 320, #u32
+     }
+    BYTE_OFFSETS = {
+        'text_start' : 0, #ptr32
+        'text_end' : 4, #ptr32
+        'ram_data_start' : 8, #ptr32
+        'ram_data_end' : 12, #ptr32
+        'bss_start' : 16, #ptr32
+        'bss_end' : 20, #ptr32
+        'persistant_ram_start' : 24, #ptr32
+        'persistant_ram_end' : 28, #ptr32
+        'extbuf_start' : 32, #ptr32
+        'extbuf_end' : 36, #ptr32
+        'extbuf_size' : 40, #u32
+     }
+    text_start: int = 0
+    text_end: int = 0
+    ram_data_start: int = 0
+    ram_data_end: int = 0
+    bss_start: int = 0
+    bss_end: int = 0
+    persistant_ram_start: int = 0
+    persistant_ram_end: int = 0
+    extbuf_start: int = 0
+    extbuf_end: int = 0
+    extbuf_size: int = 0
+    def pack(self) -> bytes:
+        return (b''
+            + struct.pack("<L", self.text_start)
+            + struct.pack("<L", self.text_end)
+            + struct.pack("<L", self.ram_data_start)
+            + struct.pack("<L", self.ram_data_end)
+            + struct.pack("<L", self.bss_start)
+            + struct.pack("<L", self.bss_end)
+            + struct.pack("<L", self.persistant_ram_start)
+            + struct.pack("<L", self.persistant_ram_end)
+            + struct.pack("<L", self.extbuf_start)
+            + struct.pack("<L", self.extbuf_end)
+            + struct.pack("<L", self.extbuf_size)
+        )
+    def unpack(self, data) -> None:
+        self.text_start = struct.unpack("<L", data[0:4])[0]
+        self.text_end = struct.unpack("<L", data[4:8])[0]
+        self.ram_data_start = struct.unpack("<L", data[8:12])[0]
+        self.ram_data_end = struct.unpack("<L", data[12:16])[0]
+        self.bss_start = struct.unpack("<L", data[16:20])[0]
+        self.bss_end = struct.unpack("<L", data[20:24])[0]
+        self.persistant_ram_start = struct.unpack("<L", data[24:28])[0]
+        self.persistant_ram_end = struct.unpack("<L", data[28:32])[0]
+        self.extbuf_start = struct.unpack("<L", data[32:36])[0]
+        self.extbuf_end = struct.unpack("<L", data[36:40])[0]
+        self.extbuf_size = struct.unpack("<L", data[40:44])[0]
 # ProbeConstantData
 @dataclasses.dataclass
 class ProbeConstantData:
@@ -433,11 +500,11 @@ class JabusAnswerEchoExt:
         return self.header.pack()
     def unpack(self, data) -> None:
         self.header.unpack(data[0:8])
-# Jabus Cmd GetExtbufInfo (0x0008)
+# Jabus Cmd GetExtbufInfo (0x0018)
 # GetExtbufInfo
 @dataclasses.dataclass
 class JabusRequestGetExtbufInfo:
-    CMD_ID = 0x0008
+    CMD_ID = 0x0018
     CMD_NAME = 'GetExtbufInfo'
     CMD_LENGTH = 4
     BIT_OFFSETS = {
@@ -454,7 +521,7 @@ class JabusRequestGetExtbufInfo:
 # GetExtbufInfo
 @dataclasses.dataclass
 class JabusAnswerGetExtbufInfo:
-    CMD_ID = 0x0008
+    CMD_ID = 0x0018
     CMD_NAME = 'GetExtbufInfo'
     CMD_LENGTH = 12
     BIT_OFFSETS = {
@@ -476,11 +543,50 @@ class JabusAnswerGetExtbufInfo:
         self.header.unpack(data[0:4])
         self.buf_ptr = struct.unpack("<L", data[4:8])[0]
         self.buf_len = struct.unpack("<L", data[8:12])[0]
-# Jabus Cmd GetSettingsInfo (0x0012)
+# Jabus Cmd GetFuncPtr (0x001E)
+# GetFuncPtr
+@dataclasses.dataclass
+class JabusRequestGetFuncPtr:
+    CMD_ID = 0x001E
+    CMD_NAME = 'GetFuncPtr'
+    CMD_LENGTH = 4
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestGetFuncPtr.CMD_LENGTH,JabusRequestGetFuncPtr.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+# GetFuncPtr
+@dataclasses.dataclass
+class JabusAnswerGetFuncPtr:
+    CMD_ID = 0x001E
+    CMD_NAME = 'GetFuncPtr'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'func' : 32, #u32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'func' : 4, #u32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerGetFuncPtr.CMD_LENGTH,JabusAnswerGetFuncPtr.CMD_ID))
+    func: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<L", self.func)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.func = struct.unpack("<L", data[4:8])[0]
+# Jabus Cmd GetSettingsInfo (0x0010)
 # GetSettingsInfo
 @dataclasses.dataclass
 class JabusRequestGetSettingsInfo:
-    CMD_ID = 0x0012
+    CMD_ID = 0x0010
     CMD_NAME = 'GetSettingsInfo'
     CMD_LENGTH = 4
     BIT_OFFSETS = {
@@ -497,7 +603,7 @@ class JabusRequestGetSettingsInfo:
 # GetSettingsInfo
 @dataclasses.dataclass
 class JabusAnswerGetSettingsInfo:
-    CMD_ID = 0x0012
+    CMD_ID = 0x0010
     CMD_NAME = 'GetSettingsInfo'
     CMD_LENGTH = 8
     BIT_OFFSETS = {
@@ -515,6 +621,62 @@ class JabusAnswerGetSettingsInfo:
     def unpack(self, data) -> None:
         self.header.unpack(data[0:4])
         self.num_settings = struct.unpack("<L", data[4:8])[0]
+# Jabus Cmd JumpToMem (0x001C)
+# JumpToMem
+@dataclasses.dataclass
+class JabusRequestJumpToMem:
+    CMD_ID = 0x001C
+    CMD_NAME = 'JumpToMem'
+    CMD_LENGTH = 16
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'addr' : 32, #u32
+        'arg0' : 64, #i32
+        'arg1' : 96, #i32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'addr' : 4, #u32
+        'arg0' : 8, #i32
+        'arg1' : 12, #i32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestJumpToMem.CMD_LENGTH,JabusRequestJumpToMem.CMD_ID))
+    addr: int = 0
+    arg0: int = 0
+    arg1: int = 0
+    def pack(self) -> bytes:
+        return (b''
+            + self.header.pack()
+            + struct.pack("<L", self.addr)
+            + struct.pack("<l", self.arg0)
+            + struct.pack("<l", self.arg1)
+        )
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.addr = struct.unpack("<L", data[4:8])[0]
+        self.arg0 = struct.unpack("<l", data[8:12])[0]
+        self.arg1 = struct.unpack("<l", data[12:16])[0]
+# JumpToMem
+@dataclasses.dataclass
+class JabusAnswerJumpToMem:
+    CMD_ID = 0x001C
+    CMD_NAME = 'JumpToMem'
+    CMD_LENGTH = 8
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'result' : 32, #i32
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'result' : 4, #i32
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerJumpToMem.CMD_LENGTH,JabusAnswerJumpToMem.CMD_ID))
+    result: int = 0
+    def pack(self) -> bytes:
+        return self.header.pack() + struct.pack("<l", self.result)
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.result = struct.unpack("<l", data[4:8])[0]
 # Jabus Cmd NOK (0x0002)
 # NOK
 @dataclasses.dataclass
@@ -567,11 +729,11 @@ class JabusAnswerNOK:
         self.the_bad_cmd = struct.unpack("<H", data[4:6])[0]
         self.error_code = struct.unpack("<l", data[6:10])[0]
         self.info = struct.unpack("<L", data[10:14])[0]
-# Jabus Cmd ReadMem (0x0010)
+# Jabus Cmd ReadMem (0x000A)
 # ReadMem
 @dataclasses.dataclass
 class JabusRequestReadMem:
-    CMD_ID = 0x0010
+    CMD_ID = 0x000A
     CMD_NAME = 'ReadMem'
     CMD_LENGTH = 10
     BIT_OFFSETS = {
@@ -596,7 +758,7 @@ class JabusRequestReadMem:
 # ReadMem
 @dataclasses.dataclass
 class JabusAnswerReadMem:
-    CMD_ID = 0x0011
+    CMD_ID = 0x000B
     CMD_NAME = 'ReadMem'
     CMD_LENGTH = 8
     BIT_OFFSETS = {
@@ -610,11 +772,11 @@ class JabusAnswerReadMem:
         return self.header.pack()
     def unpack(self, data) -> None:
         self.header.unpack(data[0:8])
-# Jabus Cmd ReadSettingsBlock (0x0014)
+# Jabus Cmd ReadSettingsBlock (0x0012)
 # ReadSettingsBlock
 @dataclasses.dataclass
 class JabusRequestReadSettingsBlock:
-    CMD_ID = 0x0014
+    CMD_ID = 0x0012
     CMD_NAME = 'ReadSettingsBlock'
     CMD_LENGTH = 8
     BIT_OFFSETS = {
@@ -635,7 +797,7 @@ class JabusRequestReadSettingsBlock:
 # ReadSettingsBlock
 @dataclasses.dataclass
 class JabusAnswerReadSettingsBlock:
-    CMD_ID = 0x0015
+    CMD_ID = 0x0013
     CMD_NAME = 'ReadSettingsBlock'
     CMD_LENGTH = 12
     BIT_OFFSETS = {
@@ -653,11 +815,11 @@ class JabusAnswerReadSettingsBlock:
     def unpack(self, data) -> None:
         self.header.unpack(data[0:8])
         self.block_index = struct.unpack("<L", data[8:12])[0]
-# Jabus Cmd Reset (0x0016)
+# Jabus Cmd Reset (0x0008)
 # Reset
 @dataclasses.dataclass
 class JabusRequestReset:
-    CMD_ID = 0x0016
+    CMD_ID = 0x0008
     CMD_NAME = 'Reset'
     CMD_LENGTH = 8
     BIT_OFFSETS = {
@@ -678,24 +840,102 @@ class JabusRequestReset:
 # Reset
 @dataclasses.dataclass
 class JabusAnswerReset:
-    CMD_ID = 0x0016
+    CMD_ID = 0x0008
     CMD_NAME = 'Reset'
-    CMD_LENGTH = 8
+    CMD_LENGTH = 12
     BIT_OFFSETS = {
         'header' : 0, #struct
-        'current_mode_magic' : 32, #u32
+        'reset_mode_magic' : 32, #u32
+        'reset_counter' : 64, #u32
      }
     BYTE_OFFSETS = {
         'header' : 0, #struct
-        'current_mode_magic' : 4, #u32
+        'reset_mode_magic' : 4, #u32
+        'reset_counter' : 8, #u32
      }
     header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerReset.CMD_LENGTH,JabusAnswerReset.CMD_ID))
-    current_mode_magic: int = 0
+    reset_mode_magic: int = 0
+    reset_counter: int = 0
     def pack(self) -> bytes:
-        return self.header.pack() + struct.pack("<L", self.current_mode_magic)
+        return self.header.pack() + struct.pack("<L", self.reset_mode_magic) + struct.pack("<L", self.reset_counter)
     def unpack(self, data) -> None:
         self.header.unpack(data[0:4])
-        self.current_mode_magic = struct.unpack("<L", data[4:8])[0]
+        self.reset_mode_magic = struct.unpack("<L", data[4:8])[0]
+        self.reset_counter = struct.unpack("<L", data[8:12])[0]
+# Jabus Cmd WriteMem (0x000C)
+# WriteMem
+@dataclasses.dataclass
+class JabusRequestWriteMem:
+    CMD_ID = 0x000D
+    CMD_NAME = 'WriteMem'
+    CMD_LENGTH = 12
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeaderReqExtended = dataclasses.field(default_factory=lambda: JabusHeaderReqExtended(0,JabusRequestWriteMem.CMD_LENGTH,JabusRequestWriteMem.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:12])
+# WriteMem
+@dataclasses.dataclass
+class JabusAnswerWriteMem:
+    CMD_ID = 0x000C
+    CMD_NAME = 'WriteMem'
+    CMD_LENGTH = 4
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerWriteMem.CMD_LENGTH,JabusAnswerWriteMem.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+# Jabus Cmd GetLinkerSymbols (0x001A)
+# GetLinkerSymbols
+@dataclasses.dataclass
+class JabusRequestGetLinkerSymbols:
+    CMD_ID = 0x001A
+    CMD_NAME = 'GetLinkerSymbols'
+    CMD_LENGTH = 4
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusRequestGetLinkerSymbols.CMD_LENGTH,JabusRequestGetLinkerSymbols.CMD_ID))
+    def pack(self) -> bytes:
+        return self.header.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+# GetLinkerSymbols
+@dataclasses.dataclass
+class JabusAnswerGetLinkerSymbols:
+    CMD_ID = 0x001A
+    CMD_NAME = 'GetLinkerSymbols'
+    CMD_LENGTH = 48
+    BIT_OFFSETS = {
+        'header' : 0, #struct
+        'linker_symbols' : 32, #struct
+     }
+    BYTE_OFFSETS = {
+        'header' : 0, #struct
+        'linker_symbols' : 4, #struct
+     }
+    header: JabusHeader = dataclasses.field(default_factory=lambda: JabusHeader(0,JabusAnswerGetLinkerSymbols.CMD_LENGTH,JabusAnswerGetLinkerSymbols.CMD_ID))
+    linker_symbols: LinkerSymbols = dataclasses.field(default_factory=LinkerSymbols)
+    def pack(self) -> bytes:
+        return self.header.pack() + self.linker_symbols.pack()
+    def unpack(self, data) -> None:
+        self.header.unpack(data[0:4])
+        self.linker_symbols.unpack(data[4:48])
 # Jabus Cmd Probe (0x0000)
 # Probe
 @dataclasses.dataclass
@@ -801,6 +1041,21 @@ class JabusHeaderReqExtended_ct(ctypes.Structure):
         ("ext_length"        , ctypes.c_uint), # 4
         ("ext_address"       , ctypes.c_uint), # 8
     ]
+# ctypes LinkerSymbols
+class LinkerSymbols_ct(ctypes.Structure):
+    _fields_ = [
+        ("text_start"        , ctypes.c_void_p), # 0
+        ("text_end"          , ctypes.c_void_p), # 4
+        ("ram_data_start"    , ctypes.c_void_p), # 8
+        ("ram_data_end"      , ctypes.c_void_p), # 12
+        ("bss_start"         , ctypes.c_void_p), # 16
+        ("bss_end"           , ctypes.c_void_p), # 20
+        ("persistant_ram_start", ctypes.c_void_p), # 24
+        ("persistant_ram_end", ctypes.c_void_p), # 28
+        ("extbuf_start"      , ctypes.c_void_p), # 32
+        ("extbuf_end"        , ctypes.c_void_p), # 36
+        ("extbuf_size"       , ctypes.c_uint), # 40
+    ]
 # ctypes ProbeConstantData
 class ProbeConstantData_ct(ctypes.Structure):
     _fields_ = [
@@ -819,11 +1074,15 @@ class SettingsMain_ct(ctypes.Structure):
 # Default BlockHandler.gen_py2: jabus_cmd Echo:
 # Default BlockHandler.gen_py2: jabus_cmd EchoExt:
 # Default BlockHandler.gen_py2: jabus_cmd GetExtbufInfo:
+# Default BlockHandler.gen_py2: jabus_cmd GetFuncPtr:
 # Default BlockHandler.gen_py2: jabus_cmd GetSettingsInfo:
+# Default BlockHandler.gen_py2: jabus_cmd JumpToMem:
 # Default BlockHandler.gen_py2: jabus_cmd NOK:
 # Default BlockHandler.gen_py2: jabus_cmd ReadMem:
 # Default BlockHandler.gen_py2: jabus_cmd ReadSettingsBlock:
 # Default BlockHandler.gen_py2: jabus_cmd Reset:
+# Default BlockHandler.gen_py2: jabus_cmd WriteMem:
+# Default BlockHandler.gen_py2: jabus_cmd GetLinkerSymbols:
 # Default BlockHandler.gen_py2: jabus_cmd Probe:
 
 JABUS_CMDS_MAP = {
@@ -831,18 +1090,26 @@ JABUS_CMDS_MAP = {
     0x0005: (JabusRequestEcho              , JabusAnswerEcho               ), # extended versions
     0x0006: (JabusRequestEchoExt           , JabusAnswerEchoExt            ),
     0x0007: (JabusRequestEchoExt           , JabusAnswerEchoExt            ), # extended versions
-    0x0008: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
-    0x0009: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
-    0x0012: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ),
-    0x0013: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ), # extended versions
+    0x0018: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ),
+    0x0019: (JabusRequestGetExtbufInfo     , JabusAnswerGetExtbufInfo      ), # extended versions
+    0x001E: (JabusRequestGetFuncPtr        , JabusAnswerGetFuncPtr         ),
+    0x001F: (JabusRequestGetFuncPtr        , JabusAnswerGetFuncPtr         ), # extended versions
+    0x0010: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ),
+    0x0011: (JabusRequestGetSettingsInfo   , JabusAnswerGetSettingsInfo    ), # extended versions
+    0x001C: (JabusRequestJumpToMem         , JabusAnswerJumpToMem          ),
+    0x001D: (JabusRequestJumpToMem         , JabusAnswerJumpToMem          ), # extended versions
     0x0002: (JabusRequestNOK               , JabusAnswerNOK                ),
     0x0003: (JabusRequestNOK               , JabusAnswerNOK                ), # extended versions
-    0x0010: (JabusRequestReadMem           , JabusAnswerReadMem            ),
-    0x0011: (JabusRequestReadMem           , JabusAnswerReadMem            ), # extended versions
-    0x0014: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ),
-    0x0015: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ), # extended versions
-    0x0016: (JabusRequestReset             , JabusAnswerReset              ),
-    0x0017: (JabusRequestReset             , JabusAnswerReset              ), # extended versions
+    0x000A: (JabusRequestReadMem           , JabusAnswerReadMem            ),
+    0x000B: (JabusRequestReadMem           , JabusAnswerReadMem            ), # extended versions
+    0x0012: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ),
+    0x0013: (JabusRequestReadSettingsBlock , JabusAnswerReadSettingsBlock  ), # extended versions
+    0x0008: (JabusRequestReset             , JabusAnswerReset              ),
+    0x0009: (JabusRequestReset             , JabusAnswerReset              ), # extended versions
+    0x000C: (JabusRequestWriteMem          , JabusAnswerWriteMem           ),
+    0x000D: (JabusRequestWriteMem          , JabusAnswerWriteMem           ), # extended versions
+    0x001A: (JabusRequestGetLinkerSymbols  , JabusAnswerGetLinkerSymbols   ),
+    0x001B: (JabusRequestGetLinkerSymbols  , JabusAnswerGetLinkerSymbols   ), # extended versions
     0x0000: (JabusRequestProbe             , JabusAnswerProbe              ),
     0x0001: (JabusRequestProbe             , JabusAnswerProbe              ), # extended versions
 }

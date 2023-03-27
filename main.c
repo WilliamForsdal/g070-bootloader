@@ -7,17 +7,17 @@
 #include "stm32g0xx_ll_gpio.h"
 #include "stm32g0xx_ll_rcc.h"
 #include "stm32g0xx_ll_utils.h"
+#include "string.h"
 #include "systick.h"
 #include "uart1.h"
-#include "string.h"
 
 struct PersistantDataSingleton SECTION_PERSISTANT_RAM persistantData;
 struct LinkerSymbols linkerSymbols;
 
 void save_startup_reason_copy_vars();
 void check_startup_reason_and_reply();
-void main_normal_mode();
-void main_config_mode();
+int main_normal_mode();
+int main_config_mode();
 
 void HardFault_Handler()
 {
@@ -25,6 +25,19 @@ void HardFault_Handler()
     BREAK;
     while (1) {
         LED_ON();
+    }
+}
+
+void reply_if_pc_reset()
+{
+    if (persistantData.reset_magic_after_sw_reset != 0) {
+        js.buf->header.dst = 0;
+        js.buf->header.length = sizeof(struct JabusAnswerReset);
+        js.buf->header.cmd = JABUS_CMD_RESET;
+        struct JabusAnswerReset *rst_cmd = &js.buf->cmds.ansReset;
+        rst_cmd->reset_mode_magic = persistantData.reset_magic_after_sw_reset;
+        rst_cmd->reset_counter = persistantData.reset_counter;
+        send_jabus_ans();
     }
 }
 
@@ -36,6 +49,10 @@ int main(void)
     // Init everything that is common to all modes.
     init_core();
     settings_init();
+
+    // If request reset from external source, send reply.
+    reply_if_pc_reset();
+
     // Check startup reason and jump to mode
     switch (persistantData.rcc_reset_reason) {
     case DSG_ENUM_STARTUP_REASON_WATCHDOG_RESET:
@@ -43,32 +60,31 @@ int main(void)
         // Never gets here
         return 0;
 
+    case DSG_ENUM_STARTUP_REASON_SOFTWARE_RESET:
+        switch (persistantData.reset_magic_before_sw_reset) {
+        case DSG_ENUM_RESET_MODE_NORMAL_OP_MODE:
+        default:
+            return main_normal_mode();
+        case DSG_ENUM_RESET_MODE_BOOTLOADER_MODE:
+            return main_config_mode();
+        }
+
     case DSG_ENUM_STARTUP_REASON_COLD:
     case DSG_ENUM_STARTUP_REASON_PIN_RESET:
     default:
-        // Initialize oscillator, systick, timers, and peripherals
-        main_normal_mode();
         // Normal startup
-        break;
-    }
-
-    // If request reset from external source, send reply.
-    if (persistantData.reset_magic_after_sw_reset != 0) {
-        js.buf->header.dst = 0;
-        js.buf->header.length = sizeof(struct JabusAnswerReset);
-        js.buf->header.cmd = JABUS_CMD_RESET;
-        struct JabusAnswerReset *rst_cmd = &js.buf->cmds.ansReset;
-        rst_cmd->current_mode_magic = persistantData.reset_magic_after_sw_reset;
-        send_jabus_ans();
+        return main_normal_mode();
     }
 
     // We should never get here.
     while (1) {
-    }
+    } 
     return 0;
 }
 
-void main_normal_mode()
+/// @brief This never returns, but mark it to return int so we can skip the break in switch above.
+/// @return
+int main_normal_mode()
 {
     persistantData.main_state.state = DSG_ENUM_MAIN_STATE_NORMAL_MODE;
     while (1) {
@@ -76,8 +92,9 @@ void main_normal_mode()
     }
 }
 
-void main_config_mode() {
-    
+int main_config_mode()
+{
+
     persistantData.main_state.state = DSG_ENUM_MAIN_STATE_CONFIG_MODE;
     while (1) {
         mainloop_common();
@@ -98,14 +115,14 @@ void set_linker_symbols()
     extern uint8_t _extbuf_start[];
     extern uint8_t _extbuf_end[];
     extern uint8_t _extbuf_size[];
-    linkerSymbols.start_text_flash = (uint32_t *)_stext;
-    linkerSymbols.end_text_flash = (uint32_t *)_etext;
-    linkerSymbols.start_ram_data = (uint32_t *)_sdata;
-    linkerSymbols.end_ram_data = (uint32_t *)_edata;
-    linkerSymbols.start_ram_bss = (uint32_t *)_sbss;
-    linkerSymbols.end_ram_bss = (uint32_t *)_ebss;
-    linkerSymbols.start_ram_persistant = (uint32_t *)_start_persistant;
-    linkerSymbols.end_ram_persistant = (uint32_t *)_end_persistant;
+    linkerSymbols.text_start = (uint32_t *)_stext;
+    linkerSymbols.text_end = (uint32_t *)_etext;
+    linkerSymbols.ram_data_start = (uint32_t *)_sdata;
+    linkerSymbols.ram_data_end = (uint32_t *)_edata;
+    linkerSymbols.bss_start = (uint32_t *)_sbss;
+    linkerSymbols.bss_end = (uint32_t *)_ebss;
+    linkerSymbols.persistant_ram_start = (uint32_t *)_start_persistant;
+    linkerSymbols.persistant_ram_end = (uint32_t *)_end_persistant;
     linkerSymbols.extbuf_start = (uint32_t *)_extbuf_start;
     linkerSymbols.extbuf_end = (uint32_t *)_extbuf_end;
     linkerSymbols.extbuf_size = (uint32_t)_extbuf_size;
@@ -148,8 +165,7 @@ void save_startup_reason_copy_vars()
     } else if (reset_csr_flags & RCC_CSR_SFTRSTF) {
         // Software reset
         persistantData.rcc_reset_reason = DSG_ENUM_STARTUP_REASON_SOFTWARE_RESET;
-    }
-    else {
+    } else {
         persistantData.rcc_reset_reason = 0;
     }
 }

@@ -1,0 +1,29 @@
+
+struct JabusHeader:
+    .packed
+    u8 dst
+    u8 length       # length is size of packet including header, but excluding 2 byte fcs in the end.
+    u16 cmd
+
+struct JabusHeaderReqExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+    u32 ext_address
+
+struct JabusHeaderAnsExtended:
+    .packed
+    u8 dst
+    u8 length
+    u16 cmd
+    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
+
+
+enum JABUS_CMD_HANDLER_RET(i32):
+    OK                          0
+    NOK                         -1
+    NOK_EXTDATA_BAD_FCS         -2
+    NOT_IMPLEMENTED -100

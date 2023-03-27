@@ -4,26 +4,7 @@
 #include "persistant_data.h"
 #include "stm32g0xx.h"
 
-#define NULL  (0)
 #define BREAK __asm__("BKPT")
-
-struct LinkerSymbols {
-    uint32_t *start_text_flash;
-    uint32_t *end_text_flash;
-
-    uint32_t *start_ram_data;
-    uint32_t *end_ram_data;
-
-    uint32_t *start_ram_bss;
-    uint32_t *end_ram_bss;
-
-    uint32_t *start_ram_persistant;
-    uint32_t *end_ram_persistant;
-
-    uint32_t *extbuf_start;
-    uint32_t *extbuf_end;
-    uint32_t extbuf_size; // end - start
-};
 
 extern struct LinkerSymbols linkerSymbols;
 

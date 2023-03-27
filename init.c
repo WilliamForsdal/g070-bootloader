@@ -55,8 +55,7 @@ static void init_usart(USART_TypeDef *uart, int irq)
     // Usart fifos are 8-bytes deep.
     // Configure baudrate, oversampling=16:
     uart->BRR = (CLOCK_SPEED / 115200);
-    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE; //
-    uart->CR3 = 0b101 << USART_CR3_TXFTCFG_Pos;
+    uart->CR1 = USART_CR1_FIFOEN | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE_RXFNEIE;
     if (irq) {
         NVIC_SetPriority(USART1_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
         NVIC_EnableIRQ(USART1_IRQn);

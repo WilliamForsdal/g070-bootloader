@@ -1,4 +1,6 @@
 .cs_namespace    "Sandbox"
+.include "_jabus_basic.dsg"
+.include "_dsg_settings.dsg"
 
 enum STARTUP_REASON(u16):
     COLD                0
@@ -19,54 +21,6 @@ enum MAIN_STATE(u32):
     HARDFAULT           11
 
 
-enum JABUS_CMD_HANDLER_RET(i32):
-    OK                          0
-    NOK                         -1
-    NOK_EXTDATA_FCS             -2
-    NOT_IMPLEMENTED -100
-
-struct JabusHeader:
-    .packed
-    u8 dst
-    u8 length       # length is size of packet including header, but excluding 2 byte fcs in the end.
-    u16 cmd
-
-struct JabusHeaderReqExtended:
-    .packed
-    u8 dst
-    u8 length
-    u16 cmd
-
-    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
-    u32 ext_address
-
-struct JabusHeaderAnsExtended:
-    .packed
-    u8 dst
-    u8 length
-    u16 cmd
-    u32 ext_length       # note, it is very important that the length byte is at same position in ReqExt and AnsExt
-
-settings_block SerialNumbers:
-    u32 serialNumbers[16]:
-        descr "serial number for all nodes in the network. Important for safety, so a node is not mistakenly replaced. Note that serialNumbers[0] is the network ID."
-
-settings_block SettingsBlock1:
-    u32 setting1:
-        default 0xDEADBEEF
-    u32 setting2
-    u32 setting3
-    u32 setting4
-
-settings_block SettingsBlock2:
-    u32 ching
-    u16 chong
-
-settings_collection Main:
-    settings_block SettingsBlock1   settings1
-    settings_block SettingsBlock2   settings2
-    settings_block SerialNumbers    serialNumbers
-
 bitdef PROBE_OP_FLAGS(u16):
     IN_SMALL_BOOTLOADER 0       # in small bootloader
     IN_BIG_BOOTLOADER   1       # in big bootloader
@@ -84,6 +38,8 @@ struct ProbeConstantData:
     u32 product_table_ptr                 # memory location where table def is.
     u16 product_table_size                # size of description table to efficiently read it back.
     u16 protocol_product_specific_type    # which cmds in cmd_type_product_specific are applicable.
+
+# Bootloader cmds: id < 256
 
 jabus_cmd Probe:
   id        0x0000
@@ -113,42 +69,82 @@ jabus_cmd EchoExt:
   request_extended:
   answer_extended:
   
-jabus_cmd GetExtbufInfo:
+enum RESET_MODE(u32):
+  NORMAL_OP_MODE   0x4db552ca
+  BOOTLOADER_MODE  0xbdf37d8c
+
+jabus_cmd Reset:
   id    0x0008
   request:
+    u32 reset_mode_magic
   answer:
-    u32  buf_ptr
-    u32  buf_len
+    u32 reset_mode_magic
+    u32 reset_counter
 
 jabus_cmd ReadMem:
-  id   0x0010
+  id   0x000A
   cmd_type cmd_type_memory
   request:
     u32 addr
     u16 length
   answer_extended:
 
+jabus_cmd WriteMem:
+  id   0x000C
+  cmd_type cmd_type_memory
+  request_extended:
+  answer:
+
 jabus_cmd GetSettingsInfo:
-  id   0x0012
+  id   0x0010
   request:
   answer:
     u32 num_settings
 
 jabus_cmd ReadSettingsBlock:
-  id   0x0014
+  id   0x0012
   request:
     u32 block_index
   answer_extended:
     u32 block_index
 
-
-enum RESET_MODE(u32):
-  NORMAL_OP_MODE   0x4db552ca
-  BOOTLOADER_MODE  0xbdf37d8c
-
-jabus_cmd Reset:
-  id    0x0016
+jabus_cmd GetExtbufInfo:
+  id    0x0018
   request:
-    u32 reset_mode_magic
   answer:
-    u32 current_mode_magic
+    u32  buf_ptr
+    u32  buf_len
+
+struct LinkerSymbols:
+  ptr32 u32 text_start
+  ptr32 u32 text_end
+  ptr32 u32 ram_data_start
+  ptr32 u32 ram_data_end
+  ptr32 u32 bss_start
+  ptr32 u32 bss_end
+  ptr32 u32 persistant_ram_start
+  ptr32 u32 persistant_ram_end
+  ptr32 u32 extbuf_start
+  ptr32 u32 extbuf_end
+  u32 extbuf_size
+
+jabus_cmd GetLinkerSymbols:
+  id 0x001A
+  request:
+  answer:
+    struct LinkerSymbols linker_symbols
+    
+jabus_cmd JumpToMem:
+  id 0x001C
+  request:
+    u32 addr
+    i32 arg0
+    i32 arg1
+  answer:
+    i32 result
+
+jabus_cmd GetFuncPtr:
+  id 0x001E
+  request:
+  answer:
+    u32 func

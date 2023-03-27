@@ -1,6 +1,7 @@
 #include "_main.h"
 #include "main.h"
 #include "settings/settings.h"
+#include <string.h>
 
 int jabus_cmd_handler_echo(struct JabusState *state, struct JabusRequestEcho *req)
 {
@@ -82,4 +83,38 @@ int jabus_cmd_handler_reset(struct JabusState *state, struct JabusRequestReset *
     system_reset(req->reset_mode_magic);
     //  This line will never run, we reset CPU above.
     return DSG_ENUM_JABUS_CMD_HANDLER_RET_NOK;
+}
+
+int jabus_cmd_handler_write_mem(struct JabusState *state, struct JabusRequestWriteMem *req)
+{
+    (void)state;
+    (void)req;
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_NOT_IMPLEMENTED;
+}
+
+int jabus_cmd_handler_get_linker_symbols(struct JabusState *state, struct JabusRequestGetLinkerSymbols *req)
+{
+    (void)req;
+    struct JabusAnswerGetLinkerSymbols *ans = &state->buf->cmds.ansGetLinkerSymbols;
+    memcpy(&ans->linker_symbols, &linkerSymbols, sizeof(linkerSymbols));
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
+}
+
+int add(int a, int b) { return a + b; }
+
+int jabus_cmd_handler_jump_to_mem(struct JabusState *state, struct JabusRequestJumpToMem *req)
+{
+    (void)req;
+    int (*fptr_add)(int, int) = (int (*)(int, int))(req->addr);
+    int result = fptr_add(req->arg0, req->arg1);
+    state->buf->cmds.ansJumpToMem.result = result;
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
+}
+
+int jabus_cmd_handler_get_func_ptr(struct JabusState* state, struct JabusRequestGetFuncPtr *req) {
+    
+    (void)req;
+    uint32_t add_addr = (uint32_t)(&add);
+    state->buf->cmds.ansGetFuncPtr.func = add_addr;
+    return DSG_ENUM_JABUS_CMD_HANDLER_RET_OK;
 }

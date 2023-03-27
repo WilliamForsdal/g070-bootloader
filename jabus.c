@@ -185,9 +185,8 @@ void jabus_mainloop_handler()
 
             if (calc_fcs != rx_fcs) {
                 // bad checksum!
-                send_nok(DSG_ENUM_JABUS_CMD_HANDLER_RET_NOK_EXTDATA_FCS);
+                send_nok(DSG_ENUM_JABUS_CMD_HANDLER_RET_NOK_EXTDATA_BAD_FCS);
                 js.state = 0; // mark that we're ready to handle next msg
-                LED_OFF();
                 return;
             }
         }
@@ -200,11 +199,11 @@ void jabus_mainloop_handler()
         } else {
             if (js.ext_down_count != 0) {
                 js.buf->header_ans_ext.cmd |= 1; // also tx extdata.
+                js.buf->header_ans_ext.ext_length = js.ext_down_count;
             }
             send_jabus_ans();
         }
         js.state = 0;
-        LED_OFF();
     }
 }
 
