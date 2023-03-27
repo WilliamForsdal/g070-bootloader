@@ -4,6 +4,7 @@ import string
 
 
 srcs = [
+    "vector_table.c",
     "_startup.s",
     "main.c",
     "init.c",
