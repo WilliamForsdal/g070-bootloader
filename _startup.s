@@ -108,11 +108,14 @@ LoopForever:
  * @param  None
  * @retval None
 */
+
+/*
   .section .text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
   b Infinite_Loop
   .size Default_Handler, .-Default_Handler
+*/
 
 /******************************************************************************
 *
@@ -121,57 +124,57 @@ Infinite_Loop:
 * 0x0000.0000.
 *
 ******************************************************************************/
-  .section .isr_vector,"a",%progbits
-  .type g_pfnVectors, %object
-  .size g_pfnVectors, .-g_pfnVectors
-
-g_pfnVectors:
-  .word _estack           // 0x0000_0000
-  .word Reset_Handler     // 0x0000_0004
-  .word NMI_Handler       // 0x0000_0008  
-  .word HardFault_Handler
-  .word 0
-  .word 0
-  .word 0
-  .word 0
-  .word 0
-  .word 0
-  .word 0
-  .word SVC_Handler
-  .word 0
-  .word 0
-  .word PendSV_Handler
-  .word SysTick_Handler
-  .word WWDG_IRQHandler                   /* Window WatchDog              */
-  .word 0                                /* reserved                     */
-  .word RTC_TAMP_IRQHandler               /* RTC through the EXTI line    */
-  .word FLASH_IRQHandler                  /* FLASH                        */
-  .word RCC_IRQHandler                    /* RCC                          */
-  .word EXTI0_1_IRQHandler                /* EXTI Line 0 and 1            */
-  .word EXTI2_3_IRQHandler                /* EXTI Line 2 and 3            */
-  .word EXTI4_15_IRQHandler               /* EXTI Line 4 to 15            */
-  .word 0                                 /* reserved                     */
-  .word DMA1_Channel1_IRQHandler          /* DMA1 Channel 1               */
-  .word DMA1_Channel2_3_IRQHandler        /* DMA1 Channel 2 and Channel 3 */
-  .word DMA1_Ch4_7_DMAMUX1_OVR_IRQHandler /* DMA1 Channel 4 to Channel 7, DMAMUX1 overrun */
-  .word ADC1_IRQHandler                   /* ADC1                         */
-  .word TIM1_BRK_UP_TRG_COM_IRQHandler    /* TIM1 Break, Update, Trigger and Commutation */
-  .word TIM1_CC_IRQHandler                /* TIM1 Capture Compare         */
-  .word 0                                 /* reserved                     */
-  .word TIM3_IRQHandler                   /* TIM3                         */
-  .word TIM6_IRQHandler                   /* TIM6                         */
-  .word TIM7_IRQHandler                   /* TIM7                         */
-  .word TIM14_IRQHandler                  /* TIM14                        */
-  .word TIM15_IRQHandler                  /* TIM15                        */
-  .word TIM16_IRQHandler                  /* TIM16                        */
-  .word TIM17_IRQHandler                  /* TIM17                        */
-  .word I2C1_IRQHandler                   /* I2C1                         */
-  .word I2C2_IRQHandler                   /* I2C2                         */
-  .word SPI1_IRQHandler                   /* SPI1                         */
-  .word SPI2_IRQHandler                   /* SPI2                         */
-  .word USART1_IRQHandler                 /* USART1                       */
-  .word USART2_IRQHandler                 /* USART2                       */
-  .word USART3_4_IRQHandler               /* USART3, USART4               */
+//  .section .isr_vector,"a",%progbits
+//  .type g_pfnVectors, %object
+//  .size g_pfnVectors, .-g_pfnVectors
+//
+//g_pfnVectors:
+//  .word _estack           // 0x0000_0000
+//  .word Reset_Handler     // 0x0000_0004
+//  .word NMI_Handler       // 0x0000_0008  
+//  .word HardFault_Handler
+//  .word 0
+//  .word 0
+//  .word 0
+//  .word 0
+//  .word 0
+//  .word 0
+//  .word 0
+//  .word SVC_Handler
+//  .word 0
+//  .word 0
+//  .word PendSV_Handler
+//  .word SysTick_Handler
+//  .word WWDG_IRQHandler                   /* Window WatchDog              */
+//  .word 0                                /* reserved                     */
+//  .word RTC_TAMP_IRQHandler               /* RTC through the EXTI line    */
+//  .word FLASH_IRQHandler                  /* FLASH                        */
+//  .word RCC_IRQHandler                    /* RCC                          */
+//  .word EXTI0_1_IRQHandler                /* EXTI Line 0 and 1            */
+//  .word EXTI2_3_IRQHandler                /* EXTI Line 2 and 3            */
+//  .word EXTI4_15_IRQHandler               /* EXTI Line 4 to 15            */
+//  .word 0                                 /* reserved                     */
+//  .word DMA1_Channel1_IRQHandler          /* DMA1 Channel 1               */
+//  .word DMA1_Channel2_3_IRQHandler        /* DMA1 Channel 2 and Channel 3 */
+//  .word DMA1_Ch4_7_DMAMUX1_OVR_IRQHandler /* DMA1 Channel 4 to Channel 7, DMAMUX1 overrun */
+//  .word ADC1_IRQHandler                   /* ADC1                         */
+//  .word TIM1_BRK_UP_TRG_COM_IRQHandler    /* TIM1 Break, Update, Trigger and Commutation */
+//  .word TIM1_CC_IRQHandler                /* TIM1 Capture Compare         */
+//  .word 0                                 /* reserved                     */
+//  .word TIM3_IRQHandler                   /* TIM3                         */
+//  .word TIM6_IRQHandler                   /* TIM6                         */
+//  .word TIM7_IRQHandler                   /* TIM7                         */
+//  .word TIM14_IRQHandler                  /* TIM14                        */
+//  .word TIM15_IRQHandler                  /* TIM15                        */
+//  .word TIM16_IRQHandler                  /* TIM16                        */
+//  .word TIM17_IRQHandler                  /* TIM17                        */
+//  .word I2C1_IRQHandler                   /* I2C1                         */
+//  .word I2C2_IRQHandler                   /* I2C2                         */
+//  .word SPI1_IRQHandler                   /* SPI1                         */
+//  .word SPI2_IRQHandler                   /* SPI2                         */
+//  .word USART1_IRQHandler                 /* USART1                       */
+//  .word USART2_IRQHandler                 /* USART2                       */
+//  .word USART3_4_IRQHandler               /* USART3, USART4               */
 
 /*******************************************************************************
 *
@@ -181,6 +184,7 @@ g_pfnVectors:
 *
 *******************************************************************************/
 
+/*
   .weak      NMI_Handler
   .thumb_set NMI_Handler,Default_Handler
 
@@ -276,3 +280,4 @@ g_pfnVectors:
 
   .weak      USART3_4_IRQHandler
   .thumb_set USART3_4_IRQHandler,Default_Handler
+*/

@@ -66,7 +66,7 @@ int uart_tx(uint8_t *data, int num_bytes)
     return handled;
 }
 
-void USART1_IRQHandler()
+void usart1_handler()
 {
     if (USART1->ISR & (USART_ISR_TXFE) && (USART1->CR1 & USART_CR1_TXFEIE)) {
         int num_to_tx = uart_tx_current_bytes();

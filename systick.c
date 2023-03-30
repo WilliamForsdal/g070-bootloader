@@ -1,7 +1,7 @@
 #include "systick.h"
 
 // Interrupt handler
-void SysTick_Handler()
+void systick_handler()
 {
     persistantData.main_state.systick_counter++;
 }
